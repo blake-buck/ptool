@@ -1,0 +1,15 @@
+{
+    "server":"./server/default.js",
+    "client":{
+        "script":"./client/default.js",
+        "flags":{
+
+        },
+        "packages":{
+            
+        }
+    },
+    "fullstack":{
+        "script":"./fullstack/default.js"
+    }
+}
