@@ -85,6 +85,14 @@ post-install-instructions.txt
     let moduleSpecification = JSON.parse(await fs.readFile(`${modulePath}/open-api-specification.json`, 'utf8'));
     
     baseInstallSpecification.paths = {...baseInstallSpecification.paths, ...moduleSpecification.paths};
+    baseInstallSpecification.components.responses = {
+        ...baseInstallSpecification.components.responses,
+        ...moduleSpecification.components.responses
+    }
+    baseInstallSpecification.components.schemas = {
+        ...baseInstallSpecification.components.schemas,
+        ...moduleSpecification.components.schemas
+    }
     
     await fs.writeFile(`${installationPath}/open-api-specification.json`, JSON.stringify(baseInstallSpecification));
 }
