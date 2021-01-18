@@ -1,0 +1,252 @@
+{
+    "requests":{
+        "/${tableName}":{
+            "get":{
+                "summary": "Retrieves records from the ${tableName} table",
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "description": "The number of records to return from the call."
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "description": "The index position to start returning records from."
+                    },
+                    {
+                        "name": "fields",
+                        "in": "query",
+                        "description": "A comma seperated list of record fields to return"
+                    }
+                ],
+                "responses":{
+                    "200":{
+                        "content":{
+                            "application/json":{
+                                "schema":{
+                                    "$ref":"#/components/schemas/${tableName}Array"
+                                }
+                            }
+                        }
+                    },
+                    "400":{
+                        "$ref": "#/components/responses/${tableName}Error"
+                    },
+                    "500":{
+                        "$ref": "#/components/responses/${tableName}Error"
+                    }
+                }
+            },
+            "post":{
+                "summary": "Creates a record in the ${tableName} table",
+                "requestBody":{
+                    "application/json":{
+                        "schema":{
+                            "$ref": "#/components/schemas/${tableName}MinusId"
+                        }
+                    }
+                },
+                "responses":{
+                    "200":{
+                        "content":{
+                            "application/json":{
+                                "schema":{
+                                    "$ref": "#/components/schemas/${tableName}"
+                                }
+                            }
+                        }
+                    },
+                    "400":{
+                        "$ref": "#/components/responses/${tableName}Error"
+                    },
+                    "500":{
+                        "$ref": "#/components/responses/${tableName}Error"
+                    }
+                }
+            },
+            "put":{
+                "summary": "Bulk updates records in the ${tableName} table",
+                "requestBody":{
+                    "application/json":{
+                        "schema":{
+                            "$ref":"#/components/schemas/${tableName}"
+                        }
+                    }
+                },
+                "responses":{
+                    "200":{
+                        "$ref": "#/components/responses/${tableName}Ok"
+                    },
+                    "400":{
+                        "$ref": "#/components/responses/${tableName}Error"
+                    },
+                    "500":{
+                        "$ref": "#/components/responses/${tableName}Error"
+                    }
+                }
+            },
+            "delete":{
+                "summary": "Bulk deletes records in the ${tableName} table",
+                "requestBody":{
+                    "application/json":{
+                        "schema":{
+                            "type": "array",
+                            "style": "simple",
+                            "items": {
+                                "type": "number"
+                            }
+                        }
+                    }
+                },
+                "responses":{
+                    "200":{
+                        "$ref": "#/components/responses/${tableName}Ok"
+                    },
+                    "400":{
+                        "$ref": "#/components/responses/${tableName}Error"
+                    },
+                    "500":{
+                        "$ref": "#/components/responses/${tableName}Error"
+                    }
+                }
+            }
+        },
+        "/${tableName}/{id}":{
+            "get":{
+                "summary": "Gets a specific record from the ${tableName} table",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The record id."
+                    },
+                    {
+                        "name": "fields",
+                        "in": "query",
+                        "description": "A comma seperated list of record fields to return"
+                    }
+                ],
+                "responses":{
+                    "200":{
+                        "content":{
+                            "application/json":{
+                                "schema":{
+                                    "$ref":"#/components/schemas/${tableName}"
+                                }
+                            }
+                        }
+                    },
+                    "400":{
+                        "$ref": "#/components/responses/${tableName}Error"
+                    },
+                    "500":{
+                        "$ref": "#/components/responses/${tableName}Error"
+                    }
+                }
+            },
+            "put":{
+                "summary": "Updates a specific record in the ${tableName} table",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The record id."
+                    }
+                ],
+                "requestBody":{
+                    "application/json":{
+                        "schema":{
+                            "$ref":"#/components/schemas/${tableName}"
+                        }
+                    }
+                },
+                "responses":{
+                    "200":{
+                        "$ref": "#/components/responses/${tableName}Ok"
+                    },
+                    "400":{
+                        "$ref": "#/components/responses/${tableName}Error"
+                    },
+                    "500":{
+                        "$ref": "#/components/responses/${tableName}Error"
+                    }
+                }
+            },
+            "delete":{
+                "summary": "Deletes a specific record in the ${tableName} table",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The record id."
+                    }
+                ],
+                "responses":{
+                    "200":{
+                        "$ref": "#/components/responses/${tableName}Ok"
+                    },
+                    "400":{
+                        "$ref": "#/components/responses/${tableName}Error"
+                    },
+                    "500":{
+                        "$ref": "#/components/responses/${tableName}Error"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "responses": {
+            "${tableName}Ok": {
+                "description": "Standard OK response for the ${tableName} routes",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "${tableName}Error": {
+                "description": "Standard error for the ${tableName} routes",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "message": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "schemas": {
+            "${tableName}": {
+                "type": "object",
+                "properties": {}
+            },
+            "${tableName}MinusId": {
+                "type": "object",
+                "properties": {}
+            },
+            "${tableName}Array": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/${tableName}"
+                }
+            }
+        }
+    }
+}

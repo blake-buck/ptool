@@ -52,18 +52,21 @@ post-install-instructions.txt
 }
 
  async function addBarrelFileEntries(installationPath, modulePath){
+    if(require('fs').existsSync(`${modulePath}/middleware`)){
+        const middlewareFiles = (await fs.readdir(`${modulePath}/middleware`)).filter(fileName => !fileName.includes('.test.'));
+        let middlewareBarrelFileContents = await fs.readFile(`${installationPath}/middleware/middleware.js`, 'utf8')
+        middlewareFiles.forEach(writeToMiddlewareBarrelFile);
 
-    const middlewareFiles = (await fs.readdir(`${modulePath}/middleware`)).filter(fileName => !fileName.includes('.test.'));
-    let middlewareBarrelFileContents = await fs.readFile(`${installationPath}/middleware/middleware.js`, 'utf8')
-    middlewareFiles.forEach(writeToMiddlewareBarrelFile);
-    
-    async function writeToMiddlewareBarrelFile(fileName){
-        middlewareBarrelFileContents = middlewareBarrelFileContents.replace(
-            'module.exports = {',
-            `module.exports = {\n\t${fileName.replace('.js', '')}: require("./${fileName}"),`
-        );
+        async function writeToMiddlewareBarrelFile(fileName){
+            middlewareBarrelFileContents = middlewareBarrelFileContents.replace(
+                'module.exports = {',
+                `module.exports = {\n\t${fileName.replace('.js', '')}: require("./${fileName}"),`
+            );
+        }
+        await fs.writeFile(`${installationPath}/middleware/middleware.js`, middlewareBarrelFileContents);
     }
-    await fs.writeFile(`${installationPath}/middleware/middleware.js`, middlewareBarrelFileContents);
+    
+    
     
     const routeFiles = (await fs.readdir(`${modulePath}/routes`)).filter(fileName => !fileName.includes('.test.'));
     routeFiles.forEach(writeToRouteBarrelFile);
@@ -156,7 +159,7 @@ async function writeRemainingFilesToRoot(installationPath, modulePath){
         'post-install-instructions.txt':true
     }
     
-    const rootDirectoryContents = (await fs.readdir(`${modulePath}/`, 'utf8')).filter(dirent => !filesToNotWriteToRoot[dirent]);
+    const rootDirectoryContents = (await fs.readdir(`${modulePath}/`, 'utf8')).filter(dirent => !filesToNotWriteToRoot[dirent]).filter(dirent => dirent.includes('.'));
     console.log(rootDirectoryContents)
     rootDirectoryContents.forEach(async (file) => {
         await fs.writeFile(`${installationPath}/${file}`, await fs.readFile(`${modulePath}/${file}`, 'utf8'));
@@ -180,7 +183,7 @@ async function run(installationPath, modulePath){
 
 run(
     'C:/Users/Blake/projects/ptool-express-boilerplate',
-    'C:/Users/Blake/projects/ptool-modules/firebase_auth'
+    'C:/Users/Blake/projects/ptool-modules/sqlite'
 );
 
 process.on('unhandledRejection', (err) => {
