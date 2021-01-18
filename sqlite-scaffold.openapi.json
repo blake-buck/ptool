@@ -1,5 +1,5 @@
 {
-    "requests":{
+    "paths":{
         "/${tableName}":{
             "get":{
                 "summary": "Retrieves records from the ${tableName} table",
@@ -235,11 +235,11 @@
         "schemas": {
             "${tableName}": {
                 "type": "object",
-                "properties": {}
+                "properties": "${schemaProperties}"
             },
             "${tableName}MinusId": {
                 "type": "object",
-                "properties": {}
+                "properties": "${schemaPropertiesMinusId}"
             },
             "${tableName}Array": {
                 "type": "array",

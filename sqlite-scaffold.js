@@ -2,7 +2,7 @@
 
 // if process.argv < 4, display error message
 
-// Prompt: Is the tableName singular? y/n
+// await prompt: Is the tableName singular? y/n
 // if no, print "To maintain consistency, table names should be singular. Exiting process."
 
 // Build schema 
@@ -24,6 +24,19 @@
 // modify open-api.specification.json
 
 // print finished message to console
+const readline = require("readline");
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+const prompt = (question) => {
+    return new Promise((resolve, reject) => {
+        rl.question(question, (output) => {
+            resolve(output);
+        })
+    })
+}
+
 const fs = require('fs').promises;
 const pipe = require('./utils/pipe');
 
@@ -32,6 +45,12 @@ const sqliteToJoi = {
     'REAL': 'Joi.number()',
     'TEXT': 'Joi.string()',
     'BLOB': 'Joi.any()'
+}
+const sqliteToOpenApi = {
+    'INTEGER': 'integer',
+    'REAL': 'number',
+    'TEXT': 'string',
+    'BLOB': 'any'
 }
 
 async function run(){
@@ -44,7 +63,7 @@ async function run(){
     const tableName = process.argv[2];
     const databaseName = process.argv[3];
 
-    const isTableNameSingular = prompt('Is the table name you provided singular? Y/N');
+    const isTableNameSingular = await prompt('Is the table name you provided singular? Y/N');
     if(isTableNameSingular !== 'Y' && isTableNameSingular !== 'y'){
         return console.log(
             `To maintain consistency, table names should be singular. Exiting script.`
@@ -52,15 +71,18 @@ async function run(){
     }
 
     console.log('# BUILD TABLE SCHEMA #');
+    console.log('# Valid Types: INTEGER, REAL, TEXT, BLOB')
     let tableSchema = `CREATE TABLE ${tableName}(`;
     let joiSchema = {}
+    let openApiSchema = {}
 
     tableSchema += `id INTEGER PRIMARY KEY ASC`;
     joiSchema.id = 'Joi.Number()';
+    openApiSchema.id = {type: 'string'}
 
     let userIsAddingColumns = true;
     while(userIsAddingColumns){
-        const userInput = prompt(
+        const userInput = await prompt(
             `Enter your column name and type in the following format: COLUMN_NAME COLUMN_TYPE
             To quit, type "quit"`
         );
@@ -74,7 +96,8 @@ async function run(){
             joiSchema = {
                 ...joiSchema,
                 [columnName]: sqliteToJoi[columnType]
-            }
+            };
+            openApiSchema[columnName] = {type: sqliteToOpenApi[columnType]};
         }
     }
 
@@ -83,19 +106,25 @@ async function run(){
     console.log();
     console.log('Table Schema');
     console.log(tableSchema);
-    await fs.writeFile(`${process.argv[0]}/dbs/create-${tableName}-table.sql`);
+    await fs.writeFile(`${process.cwd()}/dbs/create-${tableName}-table.sql`, tableSchema);
+    await writeModelFile(process.cwd(), tableName, joiSchema);
+    await writeServiceFile(process.cwd(), tableName, joiSchema);
+    await writeControllerFile(process.cwd(), tableName, joiSchema);
+    await writeRouteFile(process.cwd(), tableName, joiSchema);
+    await modifyOpenApiSpec(process.cwd(), tableName, joiSchema, openApiSchema);
 
+    process.exit();
 }
 
 const sqliteModelFile = require('./sqlite-scaffold.model');
-async function writeModelFile(tableName){
+async function writeModelFile(installationPath, tableName, joiSchema){
     const {
         insertValues,
         $prependedInsertValues,
         keyPairValues,
         updateValues,
         capitalizedTableName
-    } = createSchemasFromTableName(tableName);
+    } = createSchemasFromTableName(tableName, joiSchema);
     await fs.writeFile(
         `${installationPath}/models/${tableName}.js`, 
         sqliteModelFile(
@@ -110,8 +139,8 @@ async function writeModelFile(tableName){
 }
 
 const sqliteServiceFile =require('./sqlite-scaffold.service');
-async function writeServiceFile(tableName){
-    const { capitalizedTableName } = createSchemasFromTableName(tableName);
+async function writeServiceFile(installationPath, tableName, joiSchema){
+    const { capitalizedTableName } = createSchemasFromTableName(tableName, joiSchema);
     await fs.writeFile(
         `${installationPath}/services/${tableName}.js`,
         sqliteServiceFile(tableName, capitalizedTableName)
@@ -119,17 +148,17 @@ async function writeServiceFile(tableName){
 }
 
 const sqliteControllerFile = require('./sqlite-scaffold.controller');
-async function writeControllerFile(tableName){
-    const { capitalizedTableName, commaSeparatedList } = createSchemasFromTableName(tableName);
+async function writeControllerFile(installationPath, tableName, joiSchema){
+    const { capitalizedTableName, commaSeparatedList, joiSchemaWithoutId } = createSchemasFromTableName(tableName, joiSchema);
     await fs.writeFile(
         `${installationPath}/controllers/${tableName}.js`,
-        sqliteControllerFile(tableName, capitalizedTableName, commaSeparatedList)
+        sqliteControllerFile(tableName, capitalizedTableName, commaSeparatedList, joiSchema, joiSchemaWithoutId)
     )
 }
 
 const sqliteRouteFile = require('./sqlite-scaffold.route');
-async function writeRouteFile(tableName){
-    const { capitalizedTableName } = createSchemasFromTableName(tableName);
+async function writeRouteFile(installationPath, tableName, joiSchema){
+    const { capitalizedTableName } = createSchemasFromTableName(tableName, joiSchema);
     await fs.writeFile(
         `${installationPath}/routes/${tableName}.js`,
         sqliteRouteFile(tableName, capitalizedTableName)
@@ -137,21 +166,30 @@ async function writeRouteFile(tableName){
 }
 
 const mergeApiSpecs = require('./utils/merge-api-specs');
-async function modifyOpenApiSpec(installationPath, tableName){
+async function modifyOpenApiSpec(installationPath, tableName, joiSchema, openApiSchema){
+    let openApiSchemaMinusId = {...openApiSchema};
+    delete openApiSchemaMinusId.id;
     const openApiContents = pipe(
-        (contents) => contents.replace('${tableName}', tableName),
+        (contents) => contents
+                        .replace(/\$\{tableName\}/g, tableName)
+                        .replace(/\"\$\{schemaProperties\}\"/, JSON.stringify(openApiSchema))
+                        .replace(/\"\$\{schemaPropertiesMinusId\}\"/, JSON.stringify(openApiSchemaMinusId)),
+        (contents) => {
+            console.log(contents);
+            return contents
+        },
         JSON.parse
-    )(await fs.readFile('./sqlite-scaffold.openapi.json'));
+
+    )(await fs.readFile(process.argv[1].split('\\').filter((val) => val !== 'sqlite-scaffold.js').join('/') + '/sqlite-scaffold.openapi.json', 'utf8'));
 
     const mergedSpecs = pipe(
-        () => mergeApiSpecs(installationPath, '', openApiContents),
         JSON.stringify
-    )();
+    )(await mergeApiSpecs(installationPath, '', openApiContents));
 
     await fs.writeFile(installationPath + '/open-api-specification.json', mergedSpecs);
 }
 
-function createSchemasFromTableName(tableName){
+function createSchemasFromTableName(tableName, joiSchema){
     const commaSeparatedList = Object.keys(joiSchema).join(',');
     const joiSchemaWithoutId = {...joiSchema};
     delete joiSchemaWithoutId.id;
@@ -162,7 +200,7 @@ function createSchemasFromTableName(tableName){
     const keyPairValues = $prependedInsertValues.map((val, i) => `${val}:${insertValues[i]}`).join(', ');
     const updateValues = insertValues.map((val, i) => `${val}=${$prependedInsertValues[i]}`).join(', ');
 
-    const capitalizedTableName = tableName[0].toUppercase() + tableName.slice(1);
+    const capitalizedTableName = tableName[0].toUpperCase() + tableName.slice(1);
 
 
     return {
@@ -171,7 +209,8 @@ function createSchemasFromTableName(tableName){
         keyPairValues,
         updateValues,
         capitalizedTableName,
-        commaSeparatedList
+        commaSeparatedList,
+        joiSchemaWithoutId
     }
 }
 

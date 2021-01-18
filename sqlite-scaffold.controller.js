@@ -38,7 +38,7 @@ module.exports = function(tableName, capitalizedTableName, commaSeparatedList, j
         return response.status(result.status).json(result.body);
     }
 
-    const post${capitalizedTableName}Schema = Joi.object(${JSON.stringify(joiSchemaWithoutId)})
+    const post${capitalizedTableName}Schema = Joi.object(${JSON.stringify(joiSchemaWithoutId).replace(/\"/g, '')})
     async function post${capitalizedTableName}(request, response){
         const validationResult = post${capitalizedTableName}Schema.validate(request.body);
         if(validationResult.error){
@@ -49,7 +49,7 @@ module.exports = function(tableName, capitalizedTableName, commaSeparatedList, j
         return response.status(result.status).json(result.body);
     }
 
-    const update${capitalizedTableName}sSchema = Joi.array().items(${JSON.stringify(joiSchema)}) 
+    const update${capitalizedTableName}sSchema = Joi.array().items(${JSON.stringify(joiSchema).replace(/\"/g, '')}) 
     async function update${capitalizedTableName}s(request, response){
         const validationResult = update${capitalizedTableName}sSchema.validate(request.body);
         if(validationResult.error){
@@ -60,7 +60,7 @@ module.exports = function(tableName, capitalizedTableName, commaSeparatedList, j
         return response.status(result.status).json(result.body);
     }
 
-    const updateSpecific${capitalizedTableName}Schema = Joi.object(${JSON.stringify(joiSchema)})
+    const updateSpecific${capitalizedTableName}Schema = Joi.object(${JSON.stringify(joiSchema).replace(/\"/g, '')})
     async function updateSpecific${capitalizedTableName}(request, response){
         const validationResult = updateSpecific${capitalizedTableName}Schema.validate(request.body);
         if(validationResult.error){
