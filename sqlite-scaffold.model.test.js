@@ -1,32 +1,139 @@
-const ${tableName}Model = require('./${tableName}');
+// ${tableName}
+// ${capitalizedTableName}
+// ${tableSchema}
+// ${insertExampleRecord}
+// ${jsExampleRecordObject} id:1
+// ${jsExampleRecordObjectUpdated}
+// ${jsExampleRecordObjectMinusId}
+// ${commaSeperatedList}
 
-describe('${tableName} model tests ', () => {
-    it('get${tableName} should return two records', async (done) => {
+module.exports = function(
+    tableName, 
+    capitalizedTableName, 
+    commaSeperatedList, 
+    tableSchema, 
+    insertExampleRecord,
+    jsExampleRecordObjectMinusId,
+    jsExampleRecordObjectUpdated,
+    jsExampleRecordObject
+){
+    return `
+    const ${tableName}Models = require('./${tableName}');
+    const {initializeSqlite, sqlite} = require('../initialization');
 
-    });
-
-    it('getSpecific${tableName} should return an array containing a singular record', async (done) => {
-
-    });
-
-    it('post${tableName} should return an object with an id', async (done) => {
-
-    });
-
-    it('update${tableName}s should update records', async (done) => {
-
-    });
-
-    it('updateSpecific${tableName} should update a specific record', async (done) => {
-
-    });
-
-    it('delete${tableName}s should delete records', async (done) => {
-
-    });
-
-    it('deleteSpecific${tableName} should delete a specific record', async (done) => {
-
+    beforeEach(async () => {
+        initializeSqlite(':memory:');
+        await new Promise((resolve, reject) => {
+            sqlite.db.run('${tableSchema}', (err) => {
+            if(err){
+                reject(err);
+            }
+            else{
+                sqlite.db.run('${insertExampleRecord}', (err) => {
+                    if(err){
+                        reject(err);
+                    }
+                    else{
+                        sqlite.db.run('${insertExampleRecord}', (err) => {
+                            if(err){
+                                reject(err);
+                            }
+                            else{
+                                resolve(true);
+                            }
+                        })
+                    }
+                })
+            }
+        })
+        });
     })
 
-})
+    afterEach(async () => {
+        await new Promise((resolve, reject) => {
+            sqlite.db.run('DROP TABLE ${tableName}', (err) => {
+                if(err){
+                    reject(err);
+                }
+                else{
+                    resolve(true);
+                }
+            });
+        })
+    })
+
+    describe('${tableName} model tests ', () => {
+        it('get${capitalizedTableName} should return two records', async (done) => {
+            let records = await ${tableName}Models.get${capitalizedTableName}s({limit:10, offset: 0}, '${commaSeperatedList}');
+            expect(records.length).toBe(2);
+
+            done();
+        });
+
+        it('getSpecific${capitalizedTableName} should return a singular record', async (done) => {
+            let record = await ${tableName}Models.getSpecific${capitalizedTableName}(1, '${commaSeperatedList}');
+            expect(record).toBeTruthy();
+            expect(record.id).toBeTruthy();
+
+            done();
+        });
+
+        it('post${capitalizedTableName} should return an object with an id', async (done) => {
+            let result = await ${tableName}Models.post${capitalizedTableName}(${jsExampleRecordObjectMinusId});
+            expect(result).toBeTruthy();
+            expect(result.id).toBeTruthy();
+
+            done();
+        });
+
+        it('update${capitalizedTableName}s should update records', async (done) => {
+            let result = await ${tableName}Models.update${capitalizedTableName}s([${jsExampleRecordObjectUpdated}]);
+            expect(result).toBeTruthy();
+
+            sqlite.db.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
+                const oldRecord = JSON.stringify(${jsExampleRecordObject});
+                const updatedRecord = JSON.stringify(row);
+
+                expect(oldRecord === updatedRecord).toBe(false);
+                done();
+            })
+
+        });
+
+        it('updateSpecific${capitalizedTableName} should update a specific record', async (done) => {
+            let result = await ${tableName}Models.updateSpecific${capitalizedTableName}(${jsExampleRecordObject});
+            expect(result).toBeTruthy();
+
+            sqlite.db.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
+                const oldRecord = JSON.stringify(${jsExampleRecordObject});
+                const updatedRecord = JSON.stringify(row);
+
+                expect(oldRecord === updatedRecord).toBe(false);
+                done();
+            })
+        });
+
+        it('delete${capitalizedTableName}s should delete records', async (done) => {
+            let result = await ${tableName}Models.delete${capitalizedTableName}s([1, 2]);
+            expect(result).toBeTruthy();
+
+            sqlite.db.all('SELECT * FROM ${tableName}', (err, result) => {
+                expect(result.length).toBe(0);
+                done();
+            })
+        });
+
+        it('deleteSpecific${capitalizedTableName} should delete a specific record', async (done) => {
+            let result = await ${tableName}Models.deleteSpecific${capitalizedTableName}(1);
+            expect(result).toBeTruthy();
+
+            sqlite.db.all('SELECT * FROM ${tableName}', (err, result) => {
+                expect(result.length).toBe(1);
+                done();
+            })
+        })
+
+    });
+    `
+}
+

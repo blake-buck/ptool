@@ -24,32 +24,41 @@
 // modify open-api.specification.json
 
 // print finished message to console
-const readline = require("readline");
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
-const prompt = (question) => {
-    return new Promise((resolve, reject) => {
-        rl.question(question, (output) => {
-            resolve(output);
-        })
-    })
-}
+
 
 const fs = require('fs').promises;
+
 const pipe = require('./utils/pipe');
+const prompt = require('./utils/prompt');
+
+const modelTest = require('./sqlite-scaffold.model.test');
+const serviceTest = require('./sqlite-scaffold.service.test');
+const controllerTest = require('./sqlite-scaffold.controller.test');
+const routeTest = require('./sqlite-scaffold.route.test');
 
 const sqliteToJoi = {
-    'INTEGER': 'Joi.number().integer()',
-    'REAL': 'Joi.number()',
-    'TEXT': 'Joi.string()',
-    'BLOB': 'Joi.any()'
+    'INTEGER': 'Joi.number().integer().required()',
+    'REAL': 'Joi.number().required()',
+    'TEXT': 'Joi.string().required()',
+    'BLOB': 'Joi.any().required()'
 }
 const sqliteToOpenApi = {
     'INTEGER': 'integer',
     'REAL': 'number',
     'TEXT': 'string',
+    'BLOB': 'any'
+}
+
+const properValues = {
+    'INTEGER': 0,
+    'REAL': 0,
+    'TEXT': 'string',
+    'BLOB': 'any'
+}
+const improperValues = {
+    'INTEGER': 'string',
+    'REAL': 'string',
+    'TEXT': 0,
     'BLOB': 'any'
 }
 
@@ -75,10 +84,15 @@ async function run(){
     let tableSchema = `CREATE TABLE ${tableName}(`;
     let joiSchema = {}
     let openApiSchema = {}
+    let controllerTest_properValues = {};
+    let controllerTest_improperValues = {};
+    
 
     tableSchema += `id INTEGER PRIMARY KEY ASC`;
-    joiSchema.id = 'Joi.number().integer()';
+    joiSchema.id = 'Joi.number().integer().required()';
     openApiSchema.id = {type: 'integer'}
+    controllerTest_properValues.id = 1;
+    controllerTest_improperValues.id = 'string';
 
     let userIsAddingColumns = true;
     while(userIsAddingColumns){
@@ -98,6 +112,8 @@ async function run(){
                 [columnName]: sqliteToJoi[columnType]
             };
             openApiSchema[columnName] = {type: sqliteToOpenApi[columnType]};
+            controllerTest_properValues[columnName] = properValues[columnType];
+            controllerTest_improperValues[columnName] = improperValues[columnType];
         }
     }
 
@@ -112,6 +128,73 @@ async function run(){
     await writeControllerFile(process.cwd(), tableName, joiSchema);
     await writeRouteFile(process.cwd(), tableName, joiSchema);
     await modifyOpenApiSpec(process.cwd(), tableName, joiSchema, openApiSchema);
+
+    console.log('AHHHHHHHHHHHHHHHHHHHHHH')
+    console.log(controllerTest_properValues);
+    console.log('AHHHHHHHHHHHHHHHHHHHHHH')
+
+    const {
+        insertValues,
+        $prependedInsertValues,
+        keyPairValues,
+        updateValues,
+        capitalizedTableName,
+        commaSeparatedList,
+        joiSchemaWithoutId,
+        exampleInsertRecord,
+        jsExampleRecordObject,
+        jsExampleRecordObjectMinusId,
+        jsExampleRecordObjectUpdated
+    } = createSchemasFromTableName(tableName, joiSchema, controllerTest_properValues);
+
+    await fs.writeFile(
+        `${process.cwd()}/models/${tableName}.test.js`,
+        modelTest(
+            tableName,
+            capitalizedTableName,
+            commaSeparatedList,
+            tableSchema,
+            exampleInsertRecord,
+            jsExampleRecordObjectMinusId,
+            jsExampleRecordObjectUpdated,
+            jsExampleRecordObject
+        )
+    );
+
+    await fs.writeFile(
+        `${process.cwd()}/services/${tableName}.test.js`,
+        serviceTest(
+            tableName,
+            capitalizedTableName,
+            commaSeparatedList,
+            tableSchema,
+            exampleInsertRecord,
+            jsExampleRecordObjectMinusId,
+            jsExampleRecordObjectUpdated,
+            jsExampleRecordObject
+        )
+    );
+
+    await fs.writeFile(
+        `${process.cwd()}/controllers/${tableName}.test.js`,
+        controllerTest(
+            tableName, 
+            capitalizedTableName, 
+            controllerTest_properValues, 
+            controllerTest_improperValues
+        )
+    )
+    
+    await fs.writeFile(
+        `${process.cwd()}/controllers/${tableName}.test.js`,
+        routeTest(
+            tableName, 
+            tableSchema, 
+            exampleInsertRecord, 
+            jsExampleRecordObjectMinusId, 
+            jsExampleRecordObjectUpdated
+        )
+    )
 
     process.exit();
 }
@@ -189,7 +272,7 @@ async function modifyOpenApiSpec(installationPath, tableName, joiSchema, openApi
     await fs.writeFile(installationPath + '/open-api-specification.json', mergedSpecs);
 }
 
-function createSchemasFromTableName(tableName, joiSchema){
+function createSchemasFromTableName(tableName, joiSchema, properValues){
     const commaSeparatedList = Object.keys(joiSchema).join(',');
     const joiSchemaWithoutId = {...joiSchema};
     delete joiSchemaWithoutId.id;
@@ -202,7 +285,39 @@ function createSchemasFromTableName(tableName, joiSchema){
 
     const capitalizedTableName = tableName[0].toUpperCase() + tableName.slice(1);
 
+    if(properValues){
+        const exampleInsertRecord = `INSERT INTO ${tableName}(${insertValues.join(', ')}) VALUES(${Object.values(properValues).join(', ')});`;
 
+        let jsExampleRecordObject = {...properValues};
+        let jsExampleRecordObjectMinusId = {...properValues};
+        delete jsExampleRecordObjectMinusId.id;
+    
+        let jsExampleRecordObjectUpdated = {...properValues};
+        for(let key in jsExampleRecordObjectUpdated){
+            const val = jsExampleRecordObjectUpdated[key];
+            if(typeof val === 'number'){
+                jsExampleRecordObject[key] += 1;
+            }
+            else if(typeof val === 'string'){
+                jsExampleRecordObject[key] += 'a';
+            }
+        }
+    
+        return {
+            insertValues,
+            $prependedInsertValues,
+            keyPairValues,
+            updateValues,
+            capitalizedTableName,
+            commaSeparatedList,
+            joiSchemaWithoutId,
+    
+            exampleInsertRecord,
+            jsExampleRecordObject,
+            jsExampleRecordObjectMinusId,
+            jsExampleRecordObjectUpdated
+        }
+    }
     return {
         insertValues,
         $prependedInsertValues,
@@ -212,6 +327,7 @@ function createSchemasFromTableName(tableName, joiSchema){
         commaSeparatedList,
         joiSchemaWithoutId
     }
+    
 }
 
 run();
