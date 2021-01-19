@@ -2,6 +2,7 @@
     "paths":{
         "/${tableName}":{
             "get":{
+                "tags":["${tableName} operations"],
                 "summary": "Retrieves records from the ${tableName} table",
                 "parameters": [
                     {
@@ -39,6 +40,7 @@
                 }
             },
             "post":{
+                "tags":["${tableName} operations"],
                 "summary": "Creates a record in the ${tableName} table",
                 "requestBody":{
                     "content":{
@@ -68,6 +70,7 @@
                 }
             },
             "put":{
+                "tags":["${tableName} operations"],
                 "summary": "Bulk updates records in the ${tableName} table",
                 "requestBody":{
                     "content":{
@@ -91,6 +94,7 @@
                 }
             },
             "delete":{
+                "tags":["${tableName} operations"],
                 "summary": "Bulk deletes records in the ${tableName} table",
                 "requestBody":{
                     "content":{ 
@@ -120,6 +124,7 @@
         },
         "/${tableName}/{id}":{
             "get":{
+                "tags":["${tableName} operations"],
                 "summary": "Gets a specific record from the ${tableName} table",
                 "parameters": [
                     {
@@ -152,6 +157,7 @@
                 }
             },
             "put":{
+                "tags":["${tableName} operations"],
                 "summary": "Updates a specific record in the ${tableName} table",
                 "parameters": [
                     {
@@ -182,6 +188,7 @@
                 }
             },
             "delete":{
+                "tags":["${tableName} operations"],
                 "summary": "Deletes a specific record in the ${tableName} table",
                 "parameters": [
                     {
