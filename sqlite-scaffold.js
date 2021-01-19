@@ -286,7 +286,7 @@ function createSchemasFromTableName(tableName, joiSchema, properValues){
     const capitalizedTableName = tableName[0].toUpperCase() + tableName.slice(1);
 
     if(properValues){
-        const exampleInsertRecord = `INSERT INTO ${tableName}(${insertValues.join(', ')}) VALUES(${Object.values(properValues).join(', ')});`;
+        const exampleInsertRecord = `INSERT INTO ${tableName}(${insertValues.join(', ')}) VALUES(${Object.values(properValues).slice(1).map(val => typeof val === 'string' ? JSON.stringify(val) : val).join(', ')});`;
 
         let jsExampleRecordObject = {...properValues};
         let jsExampleRecordObjectMinusId = {...properValues};
