@@ -1,15 +1,15 @@
 const GET_tests = (tableName, capitalizedTableName) => {
     const properLimit = 10;
-    const improperLimit = 'string';
+    const improperLimit = '"string"';
     
     const properOffset = 0;
-    const improperOffset = 'string';
+    const improperOffset = '"string"';
 
-    const properFields = 'string, string';
+    const properFields = '"string,string"';
     const improperFields = false;
 
     const properId = 1;
-    const improperId = 'string';
+    const improperId = '"string"';
 
     return `
     it('get${capitalizedTableName}s - improper offset fails validation', () => {
@@ -88,7 +88,7 @@ const POST_tests = (tableName, capitalizedTableName, properValues, improperValue
     const recordProperties = Object.keys(properValues);
     for(let i=0; i<recordProperties.length; i++){
         const propertyName = recordProperties[i];
-        const improperProperty = improperValues[propertyName];
+        const improperProperty = typeof improperValues[propertyName] === 'string' ? JSON.stringify(improperValues[propertyName]) : improperValues[propertyName];
         postTests += `
         it('post${capitalizedTableName} - improper ${propertyName} fails validation', () => {
             ${tableName}Controllers.post${capitalizedTableName}(
@@ -114,10 +114,10 @@ const PUT_tests = (tableName, capitalizedTableName, properValues, improperValues
     const recordProperties = Object.keys(properValues);
     for(let i=0; i<recordProperties.length; i++){
         const propertyName = recordProperties[i];
-        const improperProperty = improperValues[propertyName];
+        const improperProperty = typeof improperValues[propertyName] === 'string' ? JSON.stringify(improperValues[propertyName]) : improperValues[propertyName];
         putTests += `
         it('put${capitalizedTableName}s - improper ${propertyName} fails validation', () => {
-            ${tableName}Controllers.putSpecific${capitalizedTableName}(
+            ${tableName}Controllers.update${capitalizedTableName}s(
                 {
                     body:[{
                         ...properValues,
@@ -134,10 +134,10 @@ const PUT_tests = (tableName, capitalizedTableName, properValues, improperValues
 
     for(let i=0; i<recordProperties.length; i++){
         const propertyName = recordProperties[i];
-        const improperProperty = improperValues[propertyName];
+        const improperProperty = typeof improperValues[propertyName] === 'string' ? JSON.stringify(improperValues[propertyName]) : improperValues[propertyName];
         putTests += `
-        it('putSpecific${capitalizedTableName} - improper ${propertyName} fails validation', () => {
-            ${tableName}Controllers.putSpecific${capitalizedTableName}(
+        it('updateSpecific${capitalizedTableName} - improper ${propertyName} fails validation', () => {
+            ${tableName}Controllers.updateSpecific${capitalizedTableName}(
                 {
                     body:{
                         ...properValues,
@@ -185,6 +185,8 @@ module.exports = function(tableName, capitalizedTableName, properValues, imprope
     return `
         const ${tableName}Controllers = require('./${tableName}');
 
+        const properValues = ${JSON.stringify(properValues)};
+
         const mockResponse = () => {
             const res = {};
             res.status = (passedInStatus) => {
@@ -203,7 +205,7 @@ module.exports = function(tableName, capitalizedTableName, properValues, imprope
             expect(e).toBeTruthy();
         }
 
-        describe('${tableName} controller tests', async () => {
+        describe('${tableName} controller tests', () => {
             ${GET_tests(tableName, capitalizedTableName, properValues, improperValues)}
             ${POST_tests(tableName, capitalizedTableName, properValues, improperValues)}
             ${PUT_tests(tableName, capitalizedTableName, properValues, improperValues)}

@@ -19,6 +19,7 @@ module.exports = function(
 ){
     return `
     const ${tableName}Services = require('./${tableName}');
+    const {initializeSqlite, sqlite} = require('../initialization');
 
     beforeEach(async () => {
         initializeSqlite(':memory:');
