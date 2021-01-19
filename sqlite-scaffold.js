@@ -186,7 +186,7 @@ async function run(){
     )
     
     await fs.writeFile(
-        `${process.cwd()}/controllers/${tableName}.test.js`,
+        `${process.cwd()}/routes/${tableName}.test.js`,
         routeTest(
             tableName, 
             tableSchema, 

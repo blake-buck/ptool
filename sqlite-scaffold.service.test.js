@@ -63,7 +63,7 @@ module.exports = function(
 
     describe('${tableName} service tests', () => {
         it('get${capitalizedTableName}s should return two records', async (done) => {
-            let response = await ${tableName}Services.get${capitalizedTableName}s({limit:10, offset: 0}, ${commaSeperatedList});
+            let response = await ${tableName}Services.get${capitalizedTableName}s({limit:10, offset: 0}, '${commaSeperatedList}');
             expect(response.status).toBe(200);
             expect(response.body).toBeTruthy();
             expect(response.body.length).toBe(2);
@@ -72,7 +72,7 @@ module.exports = function(
         });
 
         it('getSpecific${capitalizedTableName} should return a singular record', async (done) => {
-            let response = await ${tableName}Services.getSpecific${capitalizedTableName}({1, ${commaSeperatedList});
+            let response = await ${tableName}Services.getSpecific${capitalizedTableName}(1,'${commaSeperatedList}');
             expect(response.status).toBe(200);
             expect(response.body).toBeTruthy();
             expect(response.body.id).toBe(1);
@@ -81,7 +81,7 @@ module.exports = function(
         });
 
         it('post${capitalizedTableName} should return an object with an id', async (done) => {
-            let response = await ${tableName}Services.post${capitalizedTableName}(${jsExampleRecordObjectMinusId});
+            let response = await ${tableName}Services.post${capitalizedTableName}(${JSON.stringify(jsExampleRecordObjectMinusId)});
             expect(response.status).toBe(200);
             expect(response.body).toBeTruthy();
             expect(response.body.id).toBeTruthy();
@@ -90,13 +90,13 @@ module.exports = function(
         });
 
         it('update${capitalizedTableName}s should update records', async (done) => {
-            let response = await ${tableName}Services.update${capitalizedTableName}s([${jsExampleRecordObjectUpdated}]);
+            let response = await ${tableName}Services.update${capitalizedTableName}s([${JSON.stringify(jsExampleRecordObjectUpdated)}]);
             expect(response.status).toBe(200);
             expect(response.body).toBeTruthy();
             expect(response.body.message).toBeTruthy();
 
             sqlite.db.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
-                const oldRecord = JSON.stringify(${jsExampleRecordObject});
+                const oldRecord = JSON.stringify(${JSON.stringify(jsExampleRecordObject)});
                 const updatedRecord = JSON.stringify(row);
 
                 expect(oldRecord === updatedRecord).toBe(false);
@@ -106,13 +106,13 @@ module.exports = function(
         });
 
         it('updateSpecific${capitalizedTableName} should update a specific record', async (done) => {
-            let response = await ${tableName}Services.updateSpecific${capitalizedTableName}(${jsExampleRecordObjectUpdated});
+            let response = await ${tableName}Services.updateSpecific${capitalizedTableName}(${JSON.stringify(jsExampleRecordObjectUpdated)});
             expect(response.status).toBe(200);
             expect(response.body).toBeTruthy();
             expect(response.body.message).toBeTruthy();
             
             sqlite.db.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
-                const oldRecord = JSON.stringify(${jsExampleRecordObject});
+                const oldRecord = JSON.stringify(${JSON.stringify(jsExampleRecordObject)});
                 const updatedRecord = JSON.stringify(row);
 
                 expect(oldRecord === updatedRecord).toBe(false);

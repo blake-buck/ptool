@@ -6,6 +6,10 @@ module.exports = function(
     jsExampleRecordObjectUpdated
 ){
     return `
+    const express = require('express');
+    const request = require('supertest');
+
+    const {initializeSqlite, sqlite, initializeStandardMiddleware} = require('../initialization');
     const ${tableName}Router = require('./${tableName}');
 
     beforeEach(async () => {
@@ -49,7 +53,11 @@ module.exports = function(
         })
     })
 
-    describe('${tableName} controller tests ', () => {
+    describe('${tableName} routes tests ', () => {
+        const app = express();
+        initializeStandardMiddleware(app);
+        app.use(${tableName}Router);
+
 
         it('GET - /${tableName}', async (done) => {
             request(app)
@@ -73,7 +81,7 @@ module.exports = function(
             request(app)
                 .post('/${tableName}')
                 .set('Accept', 'application/json')
-                .send(${jsExampleRecordObjectMinusId})
+                .send(${JSON.stringify(jsExampleRecordObjectMinusId)})
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .end(async (err, res) => {
@@ -93,7 +101,7 @@ module.exports = function(
             request(app)
                 .put('/${tableName}')
                 .set('Accept', 'application/json')
-                .send([${jsExampleRecordObjectUpdated}])
+                .send([${JSON.stringify(jsExampleRecordObjectUpdated)}])
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .end(async (err, res) => {
@@ -155,7 +163,7 @@ module.exports = function(
             request(app)
                 .put('/${tableName}/1')
                 .set('Accept', 'application/json')
-                .send(${jsExampleRecordObjectUpdated})
+                .send(${JSON.stringify(jsExampleRecordObjectUpdated)})
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .end(async (err, res) => {
