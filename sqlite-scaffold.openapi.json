@@ -41,9 +41,11 @@
             "post":{
                 "summary": "Creates a record in the ${tableName} table",
                 "requestBody":{
-                    "application/json":{
-                        "schema":{
-                            "$ref": "#/components/schemas/${tableName}MinusId"
+                    "content":{
+                        "application/json":{
+                            "schema":{
+                                "$ref": "#/components/schemas/${tableName}MinusId"
+                            }
                         }
                     }
                 },
@@ -68,9 +70,11 @@
             "put":{
                 "summary": "Bulk updates records in the ${tableName} table",
                 "requestBody":{
-                    "application/json":{
-                        "schema":{
-                            "$ref":"#/components/schemas/${tableName}"
+                    "content":{
+                        "application/json":{
+                            "schema":{
+                                "$ref":"#/components/schemas/${tableName}Array"
+                            }
                         }
                     }
                 },
@@ -89,12 +93,14 @@
             "delete":{
                 "summary": "Bulk deletes records in the ${tableName} table",
                 "requestBody":{
-                    "application/json":{
-                        "schema":{
-                            "type": "array",
-                            "style": "simple",
-                            "items": {
-                                "type": "number"
+                    "content":{ 
+                        "application/json":{
+                            "schema":{
+                                "type": "array",
+                                "style": "simple",
+                                "items": {
+                                    "type": "number"
+                                }
                             }
                         }
                     }
@@ -155,9 +161,11 @@
                     }
                 ],
                 "requestBody":{
-                    "application/json":{
-                        "schema":{
-                            "$ref":"#/components/schemas/${tableName}"
+                    "content":{
+                        "application/json":{
+                            "schema":{
+                                "$ref":"#/components/schemas/${tableName}"
+                            }
                         }
                     }
                 },

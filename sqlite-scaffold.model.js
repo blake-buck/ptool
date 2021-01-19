@@ -5,7 +5,7 @@ module.exports =
     insertValues, 
     $prependedInsertValues, 
     keyPairValues,
-    updateValues
+    updateValues,
 ) => {
     return `
     let {sqlite} = require('../initialization');
@@ -93,7 +93,7 @@ module.exports =
         }))
     }
 
-    function updateSpecific${capitalizedTableName}(${tableName}Data){
+    function updateSpecific${capitalizedTableName}({id, ${insertValues.join(', ')}}){
         return new Promise((resolve, reject) => {
             sqlite.db.run(
                 \`UPDATE ${tableName} SET ${updateValues} WHERE id=$id\`,

@@ -8,7 +8,7 @@ module.exports = function(tableName, capitalizedTableName, commaSeparatedList, j
     const get${capitalizedTableName}sSchema = Joi.object({
         limit: Joi.number().default(10),
         offset: Joi.number().default(0),
-        fields: Joi.string().pattern(/^[\w+,*]+$/i).default('${commaSeparatedList}')
+        fields: Joi.string().pattern(/^[\\w+,*]+$/i).default('${commaSeparatedList}')
     });
     async function get${capitalizedTableName}s(request, response){
         const validationResult = get${capitalizedTableName}sSchema.validate(request.query);
@@ -24,7 +24,7 @@ module.exports = function(tableName, capitalizedTableName, commaSeparatedList, j
     }
 
     const getSpecific${capitalizedTableName}Schema = Joi.object({
-        fields: Joi.string().pattern(/^[\w+,*]+$/i).default('${commaSeparatedList}')
+        fields: Joi.string().pattern(/^[\\w+,*]+$/i).default('${commaSeparatedList}')
     })
     async function getSpecific${capitalizedTableName}(request, response){
         const validationResult = getSpecific${capitalizedTableName}Schema.validate(request.query);

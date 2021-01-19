@@ -77,8 +77,8 @@ async function run(){
     let openApiSchema = {}
 
     tableSchema += `id INTEGER PRIMARY KEY ASC`;
-    joiSchema.id = 'Joi.Number()';
-    openApiSchema.id = {type: 'string'}
+    joiSchema.id = 'Joi.number().integer()';
+    openApiSchema.id = {type: 'integer'}
 
     let userIsAddingColumns = true;
     while(userIsAddingColumns){
