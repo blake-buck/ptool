@@ -93,6 +93,30 @@
                     }
                 }
             },
+            "patch":{
+                "tags":["${tableName} operations"],
+                "summary": "Bulk partially-update entries in the ${tableName} table. Every parameter except id is optional.",
+                "requestBody":{
+                    "content":{
+                        "application/json":{
+                            "schema":{
+                                "$ref":"#/components/schemas/${tableName}Array"
+                            }
+                        }
+                    }
+                },
+                "responses":{
+                    "200":{
+                        "$ref": "#/components/responses/${tableName}Ok"
+                    },
+                    "400":{
+                        "$ref": "#/components/responses/${tableName}Error"
+                    },
+                    "500":{
+                        "$ref": "#/components/responses/${tableName}Error"
+                    }
+                }
+            },
             "delete":{
                 "tags":["${tableName} operations"],
                 "summary": "Bulk deletes records in the ${tableName} table",
@@ -183,6 +207,37 @@
                         "$ref": "#/components/responses/${tableName}Error"
                     },
                     "500":{
+                        "$ref": "#/components/responses/${tableName}Error"
+                    }
+                }
+            },
+            "patch":{
+                "tags":["${tableName} operations"],
+                "summary": "Partially update a specific entry in the ${tableName} table",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "The record id."
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/${tableName}MinusId"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "$ref": "#/components/responses/${tableName}Ok"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/${tableName}Error"
+                    },
+                    "500": {
                         "$ref": "#/components/responses/${tableName}Error"
                     }
                 }

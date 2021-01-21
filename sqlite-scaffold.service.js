@@ -25,6 +25,16 @@ module.exports = function(tableName, capitalizedTableName){
         return {status: 200, body: {message: '${capitalizedTableName} updated successfully'}}
     }
 
+    async function patch${capitalizedTableName}s(${tableName}DataArray){
+        await models.patch${capitalizedTableName}s(${tableName}DataArray)
+        return {status: 200, body: {message: '${capitalizedTableName}s patched successfully'}}
+    }
+
+    async function patchSpecific${capitalizedTableName}(id, ${tableName}Data){
+        await models.patchSpecific${capitalizedTableName}(id, ${tableName}Data)
+        return {status: 200, body: {message: '${capitalizedTableName} patched successfully'}}
+    }
+
     async function delete${capitalizedTableName}s(${tableName}IdList){
         await models.delete${capitalizedTableName}s(${tableName}IdList)
         return {status: 200, body: {message: '${capitalizedTableName}s deleted successfully'}}
@@ -41,6 +51,8 @@ module.exports = function(tableName, capitalizedTableName){
         post${capitalizedTableName},
         update${capitalizedTableName}s,
         updateSpecific${capitalizedTableName},
+        patch${capitalizedTableName}s,
+        patchSpecific${capitalizedTableName},
         delete${capitalizedTableName}s,
         deleteSpecific${capitalizedTableName}
     }

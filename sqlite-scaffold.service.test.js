@@ -17,6 +17,9 @@ module.exports = function(
     jsExampleRecordObjectUpdated,
     jsExampleRecordObject
 ){
+    let patchSpecificExampleRecordObjectUpdated = {...jsExampleRecordObjectUpdated};
+    delete patchSpecificExampleRecordObjectUpdated.id;
+
     return `
     const ${tableName}Services = require('./${tableName}');
     const {initializeSqlite, sqlite} = require('../initialization');
@@ -108,6 +111,37 @@ module.exports = function(
 
         it('updateSpecific${capitalizedTableName} should update a specific record', async (done) => {
             let response = await ${tableName}Services.updateSpecific${capitalizedTableName}(${JSON.stringify(jsExampleRecordObjectUpdated)});
+            expect(response.status).toBe(200);
+            expect(response.body).toBeTruthy();
+            expect(response.body.message).toBeTruthy();
+            
+            sqlite.db.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
+                const oldRecord = JSON.stringify(${JSON.stringify(jsExampleRecordObject)});
+                const updatedRecord = JSON.stringify(row);
+
+                expect(oldRecord === updatedRecord).toBe(false);
+                done();
+            })
+        });
+
+        it('patch${capitalizedTableName}s should update records', async (done) => {
+            let response = await ${tableName}Services.patch${capitalizedTableName}s([${JSON.stringify(jsExampleRecordObjectUpdated)}]);
+            expect(response.status).toBe(200);
+            expect(response.body).toBeTruthy();
+            expect(response.body.message).toBeTruthy();
+
+            sqlite.db.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
+                const oldRecord = JSON.stringify(${JSON.stringify(jsExampleRecordObject)});
+                const updatedRecord = JSON.stringify(row);
+
+                expect(oldRecord === updatedRecord).toBe(false);
+                done();
+            })
+
+        });
+
+        it('patchSpecific${capitalizedTableName} should update a specific record', async (done) => {
+            let response = await ${tableName}Services.patchSpecific${capitalizedTableName}(1, ${JSON.stringify(patchSpecificExampleRecordObjectUpdated)});
             expect(response.status).toBe(200);
             expect(response.body).toBeTruthy();
             expect(response.body.message).toBeTruthy();

@@ -116,7 +116,7 @@ const PUT_tests = (tableName, capitalizedTableName, properValues, improperValues
         const propertyName = recordProperties[i];
         const improperProperty = typeof improperValues[propertyName] === 'string' ? JSON.stringify(improperValues[propertyName]) : improperValues[propertyName];
         putTests += `
-        it('put${capitalizedTableName}s - improper ${propertyName} fails validation', () => {
+        it('update${capitalizedTableName}s - improper ${propertyName} fails validation', () => {
             ${tableName}Controllers.update${capitalizedTableName}s(
                 {
                     body:[{
@@ -155,6 +155,52 @@ const PUT_tests = (tableName, capitalizedTableName, properValues, improperValues
     return putTests
 }
 
+const PATCH_tests = (tableName, capitalizedTableName, properValues, improperValues) => {
+    let patchTests = '';
+    const recordProperties = Object.keys(properValues);
+    for(let i=0; i<recordProperties.length; i++){
+        const propertyName = recordProperties[i];
+        const improperProperty = typeof improperValues[propertyName] === 'string' ? JSON.stringify(improperValues[propertyName]) : improperValues[propertyName];
+        patchTests += `
+        it('patch${capitalizedTableName}s - improper ${propertyName} fails validation', () => {
+            ${tableName}Controllers.patch${capitalizedTableName}s(
+                {
+                    body:[{
+                        ...properValues,
+                        ${propertyName}:${improperProperty}
+                    }]
+                },
+                mockResponse(),
+                mockNext
+            )
+        })
+
+        `
+    }
+
+    for(let i=0; i<recordProperties.length; i++){
+        const propertyName = recordProperties[i];
+        const improperProperty = typeof improperValues[propertyName] === 'string' ? JSON.stringify(improperValues[propertyName]) : improperValues[propertyName];
+        patchTests += `
+        it('patchSpecific${capitalizedTableName} - improper ${propertyName} fails validation', () => {
+            ${tableName}Controllers.patchSpecific${capitalizedTableName}(
+                {
+                    body:{
+                        ...patchSpecificProperValues,
+                        ${propertyName}:${improperProperty}
+                    }
+                },
+                mockResponse(),
+                mockNext
+            )
+        })
+
+        `
+    }
+    
+    return patchTests
+}
+
 const DELETE_tests = (tableName, capitalizedTableName) => `
     it('delete${capitalizedTableName}s - improper request fails validation', () => {
         ${tableName}Controllers.delete${capitalizedTableName}s(
@@ -182,10 +228,13 @@ const DELETE_tests = (tableName, capitalizedTableName) => `
 `
 
 module.exports = function(tableName, capitalizedTableName, properValues, improperValues){
+    let patchSpecificProperValues = {...properValues};
+    delete patchSpecificProperValues.id;
     return `
         const ${tableName}Controllers = require('./${tableName}');
 
         const properValues = ${JSON.stringify(properValues)};
+        const patchSpecificProperValues = ${JSON.stringify(patchSpecificProperValues)}
 
         const mockResponse = () => {
             const res = {};
@@ -209,6 +258,7 @@ module.exports = function(tableName, capitalizedTableName, properValues, imprope
             ${GET_tests(tableName, capitalizedTableName, properValues, improperValues)}
             ${POST_tests(tableName, capitalizedTableName, properValues, improperValues)}
             ${PUT_tests(tableName, capitalizedTableName, properValues, improperValues)}
+            ${PATCH_tests(tableName, capitalizedTableName, properValues, improperValues)}
             ${DELETE_tests(tableName, capitalizedTableName, properValues, improperValues)}
         })
     `

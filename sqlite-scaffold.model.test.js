@@ -17,6 +17,8 @@ module.exports = function(
     jsExampleRecordObjectUpdated,
     jsExampleRecordObject
 ){
+    let patchExampleRecordObject = {...jsExampleRecordObjectUpdated};
+    delete patchExampleRecordObject.id;
     return `
     const ${tableName}Models = require('./${tableName}');
     const {initializeSqlite, sqlite} = require('../initialization');
@@ -106,6 +108,33 @@ module.exports = function(
 
             sqlite.db.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
                 const oldRecord = JSON.stringify(${JSON.stringify(jsExampleRecordObject)});
+                const updatedRecord = JSON.stringify(row);
+
+                expect(oldRecord === updatedRecord).toBe(false);
+                done();
+            })
+        });
+
+        it('patch${capitalizedTableName}s should update records', async (done) => {
+            let result = await ${tableName}Models.patch${capitalizedTableName}s([${JSON.stringify(jsExampleRecordObjectUpdated)}]);
+            expect(result).toBeTruthy();
+
+            sqlite.db.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
+                const oldRecord = JSON.stringify(${JSON.stringify(jsExampleRecordObject)});
+                const updatedRecord = JSON.stringify(row);
+
+                expect(oldRecord === updatedRecord).toBe(false);
+                done();
+            })
+
+        });
+
+        it('patchSpecific${capitalizedTableName} should update a specific record', async (done) => {
+            let result = await ${tableName}Models.patchSpecific${capitalizedTableName}(1, ${JSON.stringify(patchExampleRecordObject)});
+            expect(result).toBeTruthy();
+
+            sqlite.db.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
+                const oldRecord = JSON.stringify(${JSON.stringify(patchExampleRecordObject)});
                 const updatedRecord = JSON.stringify(row);
 
                 expect(oldRecord === updatedRecord).toBe(false);

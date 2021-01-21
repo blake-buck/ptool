@@ -117,6 +117,26 @@ module.exports = function(
                 });
         });
 
+        it('PATCH - /${tableName}', async (done) => {
+            request(app)
+                .patch('/${tableName}')
+                .set('Accept', 'application/json')
+                .send([${JSON.stringify(jsExampleRecordObjectUpdated)}])
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .end(async (err, res) => {
+                    if(err){
+                        console.error(err);
+                        console.log(res.error)
+                        done();
+                    }
+    
+                    expect(res.body).toBeTruthy();
+    
+                    done();
+                });
+        });
+
         it('DELETE - /${tableName}', async (done) => {
             request(app)
                 .delete('/${tableName}')
@@ -164,6 +184,26 @@ module.exports = function(
                 .put('/${tableName}/1')
                 .set('Accept', 'application/json')
                 .send(${JSON.stringify(jsExampleRecordObjectUpdated)})
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .end(async (err, res) => {
+                    if(err){
+                        console.error(err);
+                        console.log(res.error)
+                        done();
+                    }
+    
+                    expect(res.body).toBeTruthy();
+    
+                    done();
+                });
+        });
+
+        it('PUT - /${tableName}/:id', async (done) => {
+            request(app)
+                .patch('/${tableName}/1')
+                .set('Accept', 'application/json')
+                .send(${JSON.stringify(jsExampleRecordObjectMinusId)})
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .end(async (err, res) => {
