@@ -73,7 +73,7 @@ async function run(){
         openApiSchema,
         controllerTest_properValues,
         controllerTest_improperValues
-    } = await buildParentSchemas();
+    } = await buildParentSchemas(tableName);
 
     console.log();
     console.log('Table Schema');
@@ -142,7 +142,7 @@ async function writeModelFile(installationPath, schemas){
 }
 
 async function writeServiceFile(installationPath, schemas){
-    const sqliteServiceFile =require('../sqlite-scaffold.service');
+    const sqliteServiceFile =require('./sqlite-scaffold.service');
 
     await fs.writeFile(
         `${installationPath}/services/${schemas.tableName}.js`,
@@ -279,7 +279,7 @@ function createSchemasFromTableName(tableName, joiSchema, properValues, controll
     
 }
 
-async function buildParentSchemas(){
+async function buildParentSchemas(tableName){
     console.log('# BUILD TABLE SCHEMA #');
     console.log('# Valid Types: INTEGER, REAL, TEXT, BLOB');
 
@@ -315,7 +315,7 @@ async function buildParentSchemas(){
         controllerTest_improperValues[columnName] = improperValues[columnType];
     }
 
-    tableSchema += `CREATE TABLE ${tableName}(${tableSchema});`;
+    tableSchema = `CREATE TABLE ${tableName}(${tableSchema});`;
 
     return {
         tableSchema,
