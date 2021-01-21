@@ -28,8 +28,8 @@
 
 const fs = require('fs').promises;
 
-const pipe = require('./utils/pipe');
-const prompt = require('./utils/prompt');
+const pipe = require('../utils/pipe');
+const prompt = require('../utils/prompt');
 
 const modelTest = require('./sqlite-scaffold.model.test');
 const serviceTest = require('./sqlite-scaffold.service.test');
@@ -221,7 +221,7 @@ async function writeModelFile(installationPath, tableName, joiSchema){
     )
 }
 
-const sqliteServiceFile =require('./sqlite-scaffold.service');
+const sqliteServiceFile =require('../sqlite-scaffold.service');
 async function writeServiceFile(installationPath, tableName, joiSchema){
     const { capitalizedTableName } = createSchemasFromTableName(tableName, joiSchema);
     await fs.writeFile(
@@ -248,7 +248,7 @@ async function writeRouteFile(installationPath, tableName, joiSchema){
     )
 }
 
-const mergeApiSpecs = require('./utils/merge-api-specs');
+const mergeApiSpecs = require('../utils/merge-api-specs');
 async function modifyOpenApiSpec(installationPath, tableName, joiSchema, openApiSchema){
     let openApiSchemaMinusId = {...openApiSchema};
     delete openApiSchemaMinusId.id;
