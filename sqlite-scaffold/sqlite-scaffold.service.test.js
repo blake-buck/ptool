@@ -7,16 +7,17 @@
 // ${jsExampleRecordObjectMinusId}
 // ${commaSeperatedList}
 
-module.exports = function(
-    tableName, 
-    capitalizedTableName, 
-    commaSeperatedList, 
-    tableSchema, 
-    insertExampleRecord,
-    jsExampleRecordObjectMinusId,
-    jsExampleRecordObjectUpdated,
-    jsExampleRecordObject
-){
+module.exports = function(schemas){
+    const {
+        tableName, 
+        capitalizedTableName, 
+        commaSeperatedList, 
+        tableSchema, 
+        insertExampleRecord,
+        jsExampleRecordObjectMinusId,
+        jsExampleRecordObjectUpdated,
+        jsExampleRecordObject
+    } = schemas;
     let patchSpecificExampleRecordObjectUpdated = {...jsExampleRecordObjectUpdated};
     delete patchSpecificExampleRecordObjectUpdated.id;
 

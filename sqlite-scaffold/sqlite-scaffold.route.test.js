@@ -1,10 +1,11 @@
-module.exports = function(
-    tableName, 
-    tableSchema, 
-    insertExampleRecord,
-    jsExampleRecordObjectMinusId,
-    jsExampleRecordObjectUpdated
-){
+module.exports = function(schemas){
+    const {
+        tableName, 
+        tableSchema, 
+        insertExampleRecord,
+        jsExampleRecordObjectMinusId,
+        jsExampleRecordObjectUpdated
+    } = schemas;
     return `
     const express = require('express');
     const request = require('supertest');

@@ -1,12 +1,11 @@
-module.exports = 
-(
-    tableName, 
-    capitalizedTableName, 
-    insertValues, 
-    $prependedInsertValues, 
-    keyPairValues,
-    updateValues,
-) => {
+module.exports = function(schemas){
+    const {
+        tableName, 
+        capitalizedTableName, 
+        insertValues, 
+        $prependedInsertValues, 
+        keyPairValues,
+        updateValues } = schemas;
     return `
     let {sqlite} = require('../initialization');
 

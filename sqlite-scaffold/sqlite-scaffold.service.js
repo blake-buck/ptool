@@ -1,4 +1,5 @@
-module.exports = function(tableName, capitalizedTableName){
+module.exports = function(schemas){
+    const {tableName, capitalizedTableName} = schemas;
     return `
     const models = require('../models/${tableName}');
     const standardLogger = require('../logger');

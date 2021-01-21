@@ -227,7 +227,8 @@ const DELETE_tests = (tableName, capitalizedTableName) => `
     });
 `
 
-module.exports = function(tableName, capitalizedTableName, properValues, improperValues){
+module.exports = function(schemas){
+    const {tableName, capitalizedTableName, properValues, improperValues} = schemas;
     let patchSpecificProperValues = {...properValues};
     delete patchSpecificProperValues.id;
     return `
