@@ -1,4 +1,5 @@
 const fs = require('fs').promises;
+const existsSync = require('fs').existsSync;
 /*
 # Structure of a module
 ```
@@ -22,7 +23,7 @@ post-install-instructions.txt
 - dependencies.json contents get added to package.json
 - environment-variables contents get written to .env and config.js
 - initialization contents get added to initialization.js
-- any remaining files are written to root
+- any remaining files+directories are written to root
 - post-install-instructions.txt is printed to the console
 */
 
@@ -35,57 +36,63 @@ post-install-instructions.txt
         'services'
     ];
     
-    async function writeModuleFilesToBaseInstall(directoryName){
-        if(require('fs').existsSync(`${modulePath}/${directoryName}`)){
-            const files = await fs.readdir(`${modulePath}/${directoryName}`, 'utf8');
+    moduleDirectories.forEach(async (directoryName) => {
+        const directoryPath = `${modulePath}/${directoryName}`;
+        const directoryExists = existsSync(directoryPath);
+
+        if(directoryExists){
+            const files = await fs.readdir(directoryPath, 'utf8');
             for(let i=0; i<files.length; i++){
                 const fileName = files[i];
+                const filePath = `${directoryName}/${fileName}`;
+
                 await fs.writeFile(
-                    `${installationPath}/${directoryName}/${fileName}`,
-                    await fs.readFile(`${modulePath}/${directoryName}/${fileName}`, 'utf8')
+                    `${installationPath}/${filePath}`,
+                    await fs.readFile(`${modulePath}/${filePath}`, 'utf8')
                 );
             }
         }
-    }
-    
-    moduleDirectories.forEach(writeModuleFilesToBaseInstall);
+    });
 }
 
  async function addBarrelFileEntries(installationPath, modulePath){
-    if(require('fs').existsSync(`${modulePath}/middleware`)){
-        const middlewareFiles = (await fs.readdir(`${modulePath}/middleware`)).filter(fileName => !fileName.includes('.test.'));
-        let middlewareBarrelFileContents = await fs.readFile(`${installationPath}/middleware/middleware.js`, 'utf8')
-        middlewareFiles.forEach(writeToMiddlewareBarrelFile);
+    const middlewareExists = existsSync(`${modulePath}/middleware`);
 
-        async function writeToMiddlewareBarrelFile(fileName){
+    if(middlewareExists){
+        const middlewareFiles = await fs.readdir(`${modulePath}/middleware`);
+        const nonTestMiddlewareFiles = middlewareFiles.filter(fileName => !fileName.includes('.test.'));
+
+        let middlewareBarrelFileContents = await fs.readFile(`${installationPath}/middleware/middleware.js`, 'utf8')
+        nonTestMiddlewareFiles.forEach((fileName) => {
             middlewareBarrelFileContents = middlewareBarrelFileContents.replace(
                 'module.exports = {',
                 `module.exports = {\n\t${fileName.replace('.js', '')}: require("./${fileName}"),`
             );
-        }
+        });
+
         await fs.writeFile(`${installationPath}/middleware/middleware.js`, middlewareBarrelFileContents);
     }
     
-    
-    
-    const routeFiles = (await fs.readdir(`${modulePath}/routes`)).filter(fileName => !fileName.includes('.test.'));
-    routeFiles.forEach(writeToRouteBarrelFile);
-    
-    async function writeToRouteBarrelFile(fileName){
-        let fileContents = await fs.readFile(`${installationPath}/routes/routes.js`, 'utf8');
-        fileContents = `\nconst ${fileName.replace('.js','')}Router = require("./${fileName}");\n` + fileContents;
-        fileContents = fileContents.replace(
+    const routeFiles = await fs.readdir(`${modulePath}/routes`);
+    const nonTestRouteFiles = routeFiles.filter(fileName => !fileName.includes('.test.'));
+
+    let routeBarrelFileContents = await fs.readFile(`${installationPath}/routes/routes.js`, 'utf8');
+    nonTestRouteFiles.forEach((fileName) => {
+        routeBarrelFileContents = `\nconst ${fileName.replace('.js','')}Router = require("./${fileName}");\n` + routeBarrelFileContents;
+        routeBarrelFileContents = routeBarrelFileContents.replace(
             'function initializeRoutes(app){',
             `function initializeRoutes(app){\n\tapp.use(${fileName.replace('.js','')}Router);\n`
         );
-        await fs.writeFile(`${installationPath}/routes/routes.js`, fileContents);
-    }
-    
+    });
+
+    await fs.writeFile(`${installationPath}/routes/routes.js`, routeBarrelFileContents);
 }
 
  async function addOpenApiSpecificationContent(installationPath, modulePath){
-    let baseInstallSpecification = JSON.parse(await fs.readFile(`${installationPath}/open-api-specification.json`, 'utf8'));
-    let moduleSpecification = JSON.parse(await fs.readFile(`${modulePath}/open-api-specification.json`, 'utf8'));
+    const rawBaseInstallSpecification = await fs.readFile(`${installationPath}/open-api-specification.json`, 'utf8');
+    const rawModuleSpecification = await fs.readFile(`${modulePath}/open-api-specification.json`, 'utf8')
+    let baseInstallSpecification = JSON.parse(rawBaseInstallSpecification);
+    let moduleSpecification = JSON.parse(rawModuleSpecification);
     
     baseInstallSpecification.paths = {...baseInstallSpecification.paths, ...moduleSpecification.paths};
     baseInstallSpecification.components.responses = {
@@ -117,7 +124,8 @@ post-install-instructions.txt
 }
 
 async function writeConfigurationVariables(installationPath, modulePath){
-    const environmentVariables = JSON.parse(await fs.readFile(`${modulePath}/environment-variables.json`, 'utf8'));
+    const rawEnvironmentVariables = await fs.readFile(`${modulePath}/environment-variables.json`, 'utf8')
+    const environmentVariables = JSON.parse(rawEnvironmentVariables);
     
     let dotEnvContents = await fs.readFile(`${installationPath}/.env`, 'utf8');
     environmentVariables.forEach((envVar) => {
@@ -126,7 +134,10 @@ async function writeConfigurationVariables(installationPath, modulePath){
     await fs.writeFile(`${installationPath}/.env`, dotEnvContents);
     
     let configJsContents = await fs.readFile(`${installationPath}/config.js`, 'utf8');
-    let configJsContentToAdd = environmentVariables.map((envVar) => `\t${envVar}: process.env.${envVar},`).join('\n');
+    let configJsContentToAdd = environmentVariables
+        .map((envVar) => `\t${envVar}: process.env.${envVar},`)
+        .join('\n');
+
     await fs.writeFile(
         `${installationPath}/config.js`, 
         configJsContents.replace(
@@ -159,11 +170,27 @@ async function writeRemainingFilesToRoot(installationPath, modulePath){
         'post-install-instructions.txt':true
     }
     
-    const rootDirectoryContents = (await fs.readdir(`${modulePath}/`, 'utf8')).filter(dirent => !filesToNotWriteToRoot[dirent]).filter(dirent => dirent.includes('.'));
+    
+    const rootDirectoryContents = (await fs.readdir(`${modulePath}/`, 'utf8')).filter(dirent => !filesToNotWriteToRoot[dirent]);
+    const rootFiles = rootDirectoryContents.filter(dirent => dirent.includes('.'));
+    const rootDirectories = rootDirectoryContents.filter(dirent => !dirent.includes('.'))
     console.log(rootDirectoryContents)
-    rootDirectoryContents.forEach(async (file) => {
+    rootFiles.forEach(async (file) => {
         await fs.writeFile(`${installationPath}/${file}`, await fs.readFile(`${modulePath}/${file}`, 'utf8'));
-    })
+    });
+
+    rootDirectories.forEach(readWriteDirectory)
+
+    async function readWriteDirectory(dirName){
+        if(!existsSync(`${installationPath}/${dirName}`)){
+            await fs.mkdir(`${installationPath}/${dirName}`);
+        }   
+        
+        const directoryContents = await fs.readdir(`${modulePath}/${dirName}`);
+        directoryContents.forEach(async (file) => {
+            await fs.writeFile(`${installationPath}/${dirName}/${file}`, await fs.readFile(`${modulePath}/${dirName}/${file}`, 'utf8'));
+        })
+    }
 }
 
 async function printPostInstallInstructions(installationPath, modulePath){
