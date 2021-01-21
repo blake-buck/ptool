@@ -258,6 +258,7 @@ function createSchemasFromTableName(tableName, joiSchema, properValues, controll
     }
     
     return {
+        tableName, 
         insertValues,
         $prependedInsertValues,
         keyPairValues,
