@@ -13,7 +13,8 @@ module.exports = function(schemas){
     const controllerWrapper = require('./controllerWrapper.js');
     const Joi = require('joi');
 
-    const ${tableName}Service = require('../services/${tableName}');
+    const dependencyInjector = require('../dependency-injector.js');
+    const ${tableName}Service = dependencyInjector.inject('${tableName}Service');
 
     const specificParametersSchema = Joi.object({
         id: Joi.number().integer().required()
@@ -138,7 +139,7 @@ module.exports = function(schemas){
             throw new Error(headerValidation.error);
         }
 
-        const result = await ${tableName}Service.deleteSpecific${capitalizedTableName}(validationResult.value.id);
+        const result = await ${tableName}Service.deleteSpecific${capitalizedTableName}(headerValidation.value.id);
         return response.status(result.status).json(result.body);
     }
 

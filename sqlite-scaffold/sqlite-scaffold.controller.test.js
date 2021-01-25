@@ -232,6 +232,21 @@ module.exports = function(schemas){
     let patchSpecificProperValues = {...properValues};
     delete patchSpecificProperValues.id;
     return `
+        const dependencyInjector = require('../dependency-injector.js');
+        dependencyInjector.register(
+            '${tableName}Service', 
+            {
+                get${capitalizedTableName}s: () => true,
+                getSpecific${capitalizedTableName}: () => true,
+                post${capitalizedTableName}: () => true,
+                update${capitalizedTableName}s: () => true,
+                updateSpecific${capitalizedTableName}: () => true,
+                patch${capitalizedTableName}s: () => true,
+                patchSpecific${capitalizedTableName}: () => true,
+                delete${capitalizedTableName}s: () => true,
+                deleteSpecific${capitalizedTableName}: () => true
+            }
+        );
         const ${tableName}Controllers = require('./${tableName}');
 
         const properValues = ${JSON.stringify(properValues)};

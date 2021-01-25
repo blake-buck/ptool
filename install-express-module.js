@@ -210,7 +210,7 @@ async function run(installationPath, modulePath){
 
 run(
     'C:/Users/Blake/projects/ptool-express-boilerplate',
-    'C:/Users/Blake/projects/ptool-modules/sqlite'
+    'C:/Users/Blake/projects/ptool-modules/firebase_auth'
 );
 
 process.on('unhandledRejection', (err) => {

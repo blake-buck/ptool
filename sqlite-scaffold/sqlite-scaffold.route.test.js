@@ -2,31 +2,37 @@ module.exports = function(schemas){
     const {
         tableName, 
         tableSchema, 
-        insertExampleRecord,
+        exampleInsertRecord,
         jsExampleRecordObjectMinusId,
         jsExampleRecordObjectUpdated
     } = schemas;
     return `
+    const dependencyInjector = require('../dependency-injector.js');
     const express = require('express');
     const request = require('supertest');
 
-    const {initializeSqlite, sqlite, initializeStandardMiddleware} = require('../initialization');
+    const {initializeSqlite, initializeStandardMiddleware} = require('../initialization');
+
+    initializeSqlite(':memory:');
+    dependencyInjector.register('${tableName}Model', require('../models/${tableName}'));
+    dependencyInjector.register('${tableName}Service', require('../services/${tableName}'));
+    dependencyInjector.register('${tableName}Controller', require('../controllers/${tableName}'));
+
     const ${tableName}Router = require('./${tableName}');
 
     beforeEach(async () => {
-        initializeSqlite(':memory:');
         await new Promise((resolve, reject) => {
-            sqlite.db.run('${tableSchema}', (err) => {
+            dependencyInjector.dependencies.sqlite.run('${tableSchema}', (err) => {
                 if(err){
                     reject(err);
                 }
                 else{
-                    sqlite.db.run('${insertExampleRecord}', (err) => {
+                    dependencyInjector.dependencies.sqlite.run('${exampleInsertRecord}', (err) => {
                         if(err){
                             reject(err);
                         }
                         else{
-                            sqlite.db.run('${insertExampleRecord}', (err) => {
+                            dependencyInjector.dependencies.sqlite.run('${exampleInsertRecord}', (err) => {
                                 if(err){
                                     reject(err);
                                 }
@@ -43,7 +49,7 @@ module.exports = function(schemas){
     
     afterEach(async () => {
         await new Promise((resolve, reject) => {
-            sqlite.db.run('DROP TABLE ${tableName}', (err) => {
+            dependencyInjector.dependencies.sqlite.run('DROP TABLE ${tableName}', (err) => {
                 if(err){
                     reject(err);
                 }
@@ -200,7 +206,7 @@ module.exports = function(schemas){
                 });
         });
 
-        it('PUT - /${tableName}/:id', async (done) => {
+        it('PATCH - /${tableName}/:id', async (done) => {
             request(app)
                 .patch('/${tableName}/1')
                 .set('Accept', 'application/json')

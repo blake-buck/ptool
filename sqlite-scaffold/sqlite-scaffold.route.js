@@ -4,31 +4,22 @@ module.exports = function(schemas){
     const express = require('express');
     const router = express.Router();
 
-    const {
-        get${capitalizedTableName}s,
-        getSpecific${capitalizedTableName},
-        post${capitalizedTableName},
-        update${capitalizedTableName}s,
-        updateSpecific${capitalizedTableName},
-        patch${capitalizedTableName}s,
-        patchSpecific${capitalizedTableName},
-        delete${capitalizedTableName}s,
-        deleteSpecific${capitalizedTableName}
-    } = require('../controllers/${tableName}');
+    const dependencyInjector = require('../dependency-injector.js');
+    const ${tableName}Controller = dependencyInjector.inject('${tableName}Controller');
 
-    router.get('/${tableName}', get${capitalizedTableName}s);
-    router.get('/${tableName}/:id', getSpecific${capitalizedTableName});
+    router.get('/${tableName}', ${tableName}Controller.get${capitalizedTableName}s);
+    router.get('/${tableName}/:id', ${tableName}Controller.getSpecific${capitalizedTableName});
 
-    router.post('/${tableName}', post${capitalizedTableName});
+    router.post('/${tableName}', ${tableName}Controller.post${capitalizedTableName});
 
-    router.put('/${tableName}', update${capitalizedTableName}s);
-    router.put('/${tableName}/:id', updateSpecific${capitalizedTableName});
+    router.put('/${tableName}', ${tableName}Controller.update${capitalizedTableName}s);
+    router.put('/${tableName}/:id', ${tableName}Controller.updateSpecific${capitalizedTableName});
     
-    router.patch('/${tableName}', patch${capitalizedTableName}s);
-    router.patch('/${tableName}/:id', patchSpecific${capitalizedTableName});
+    router.patch('/${tableName}', ${tableName}Controller.patch${capitalizedTableName}s);
+    router.patch('/${tableName}/:id', ${tableName}Controller.patchSpecific${capitalizedTableName});
 
-    router.delete('/${tableName}', delete${capitalizedTableName}s);
-    router.delete('/${tableName}/:id', deleteSpecific${capitalizedTableName});
+    router.delete('/${tableName}', ${tableName}Controller.delete${capitalizedTableName}s);
+    router.delete('/${tableName}/:id', ${tableName}Controller.deleteSpecific${capitalizedTableName});
 
     module.exports = router;
     `

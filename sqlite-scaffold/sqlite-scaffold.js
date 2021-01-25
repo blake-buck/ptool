@@ -15,9 +15,9 @@
 // write statement to file create-${tableName}-table.sql
 
 // write 
-//      model: Add all CRUD functionality
-//      service: call model functions
-//      controller: create joi verification schemas, call service functionality
+//      model: Add all CRUD functionality, register as dependency in initializeModels
+//      service: call model functions, register as dependency in initializeServices
+//      controller: create joi verification schemas, call service functionality, register as dependency in initializeControllers
 //      route: build router
 // write to routes.js file
 
@@ -67,13 +67,14 @@ async function run(){
 
     await checkIfSingularTable();
 
+    const parentSchema = await buildParentSchemas(tableName);
     const {
         tableSchema,
         joiSchema,
         openApiSchema,
         controllerTest_properValues,
         controllerTest_improperValues
-    } = await buildParentSchemas(tableName);
+    } = parentSchema
 
     console.log();
     console.log('Table Schema');
@@ -82,12 +83,13 @@ async function run(){
     await fs.writeFile(`${currentWorkingDirectory}/dbs/create-${tableName}-table.sql`, tableSchema);
 
 
-    const schemas = createSchemasFromTableName(
+    let schemas = createSchemasFromTableName(
         tableName, 
         joiSchema, 
         controllerTest_properValues, 
         controllerTest_improperValues
     );
+    schemas = {...schemas, ...parentSchema};
 
     await writeModelFile(currentWorkingDirectory, schemas);
     await writeServiceFile(currentWorkingDirectory, schemas);
@@ -98,7 +100,12 @@ async function run(){
     await writeServiceTestFile(schemas);
     await writeControllerTestFile(schemas);
     await writeRouteTestFile(schemas);
+
+    await modifyInitializationFile(currentWorkingDirectory, 'model', tableName);
+    await modifyInitializationFile(currentWorkingDirectory, 'service', tableName);
+    await modifyInitializationFile(currentWorkingDirectory, 'controller', tableName);
     
+    await modifyRouteBarrelFile(currentWorkingDirectory, tableName);
     await modifyOpenApiSpec(currentWorkingDirectory, tableName, openApiSchema);
 
     console.log(`Scaffolding completed. Be sure to run the CREATE TABLE command in dbs/create-${tableName}-table.sql in your databases.`)
@@ -131,6 +138,14 @@ async function getTableName(){
     return process.argv[2];
 }
 
+async function modifyInitializationFile(installationPath, layerType, tableName){
+    // layer type = what layer of the application it is: model, service, controller, etc
+    const capitalizedLayerType = `${layerType[0].toUpperCase()}${layerType.slice(1)}`;
+    const pluralLayerType = `${layerType}s`;
+    let initializationFileContents = await fs.readFile(`${installationPath}/${pluralLayerType}/initialize${capitalizedLayerType}s.js`, 'utf8');
+    initializationFileContents = initializationFileContents.replace('}', `\tdependencyInjector.register('${tableName}${capitalizedLayerType}', require('./${tableName}'));\n}`);
+    await fs.writeFile(`${installationPath}/${pluralLayerType}/initialize${capitalizedLayerType}s.js`, initializationFileContents)
+}
 
 async function writeModelFile(installationPath, schemas){
     const sqliteModelFile = require('./sqlite-scaffold.model');
@@ -325,4 +340,15 @@ async function buildParentSchemas(tableName){
         controllerTest_properValues,
         controllerTest_improperValues
     }
+}
+
+async function modifyRouteBarrelFile(installationPath, tableName){
+    let routeBarrelFileContents = await fs.readFile(`${installationPath}/routes/routes.js`, 'utf8');
+    routeBarrelFileContents = `\nconst ${tableName}Router = require("./${tableName}.js");\n` + routeBarrelFileContents;
+        routeBarrelFileContents = routeBarrelFileContents.replace(
+            'function initializeRoutes(app){',
+            `function initializeRoutes(app){\n\tapp.use(${tableName}Router);\n`
+        );
+
+    await fs.writeFile(`${installationPath}/routes/routes.js`, routeBarrelFileContents);
 }

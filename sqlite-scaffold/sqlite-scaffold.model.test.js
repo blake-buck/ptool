@@ -1,7 +1,7 @@
 // ${tableName}
 // ${capitalizedTableName}
 // ${tableSchema}
-// ${insertExampleRecord}
+// ${exampleInsertRecord}
 // ${jsExampleRecordObject} id:1
 // ${jsExampleRecordObjectUpdated}
 // ${jsExampleRecordObjectMinusId}
@@ -11,9 +11,9 @@ module.exports = function(schemas){
     const {
         tableName, 
         capitalizedTableName, 
-        commaSeperatedList, 
+        commaSeparatedList, 
         tableSchema, 
-        insertExampleRecord,
+        exampleInsertRecord,
         jsExampleRecordObjectMinusId,
         jsExampleRecordObjectUpdated,
         jsExampleRecordObject
@@ -21,23 +21,24 @@ module.exports = function(schemas){
     let patchExampleRecordObject = {...jsExampleRecordObjectUpdated};
     delete patchExampleRecordObject.id;
     return `
+    const dependencyInjector = require('../dependency-injector.js');
+    const {initializeSqlite} = require('../initialization');
+    initializeSqlite(':memory:');
     const ${tableName}Models = require('./${tableName}');
-    const {initializeSqlite, sqlite} = require('../initialization');
-
+    
     beforeEach(async () => {
-        initializeSqlite(':memory:');
         await new Promise((resolve, reject) => {
-            sqlite.db.run('${tableSchema}', (err) => {
+            dependencyInjector.dependencies.sqlite.run('${tableSchema}', (err) => {
             if(err){
                 reject(err);
             }
             else{
-                sqlite.db.run('${insertExampleRecord}', (err) => {
+                dependencyInjector.dependencies.sqlite.run('${exampleInsertRecord}', (err) => {
                     if(err){
                         reject(err);
                     }
                     else{
-                        sqlite.db.run('${insertExampleRecord}', (err) => {
+                        dependencyInjector.dependencies.sqlite.run('${exampleInsertRecord}', (err) => {
                             if(err){
                                 reject(err);
                             }
@@ -54,7 +55,7 @@ module.exports = function(schemas){
 
     afterEach(async () => {
         await new Promise((resolve, reject) => {
-            sqlite.db.run('DROP TABLE ${tableName}', (err) => {
+            dependencyInjector.dependencies.sqlite.run('DROP TABLE ${tableName}', (err) => {
                 if(err){
                     reject(err);
                 }
@@ -67,14 +68,14 @@ module.exports = function(schemas){
 
     describe('${tableName} model tests ', () => {
         it('get${capitalizedTableName} should return two records', async (done) => {
-            let records = await ${tableName}Models.get${capitalizedTableName}s({limit:10, offset: 0}, '${commaSeperatedList}');
+            let records = await ${tableName}Models.get${capitalizedTableName}s({limit:10, offset: 0}, '${commaSeparatedList}');
             expect(records.length).toBe(2);
 
             done();
         });
 
         it('getSpecific${capitalizedTableName} should return a singular record', async (done) => {
-            let record = await ${tableName}Models.getSpecific${capitalizedTableName}(1, '${commaSeperatedList}');
+            let record = await ${tableName}Models.getSpecific${capitalizedTableName}(1, '${commaSeparatedList}');
             expect(record).toBeTruthy();
             expect(record.id).toBeTruthy();
 
@@ -93,7 +94,7 @@ module.exports = function(schemas){
             let result = await ${tableName}Models.update${capitalizedTableName}s([${JSON.stringify(jsExampleRecordObjectUpdated)}]);
             expect(result).toBeTruthy();
 
-            sqlite.db.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
+            dependencyInjector.dependencies.sqlite.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
                 const oldRecord = JSON.stringify(${JSON.stringify(jsExampleRecordObject)});
                 const updatedRecord = JSON.stringify(row);
 
@@ -107,7 +108,7 @@ module.exports = function(schemas){
             let result = await ${tableName}Models.updateSpecific${capitalizedTableName}(${JSON.stringify(jsExampleRecordObject)});
             expect(result).toBeTruthy();
 
-            sqlite.db.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
+            dependencyInjector.dependencies.sqlite.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
                 const oldRecord = JSON.stringify(${JSON.stringify(jsExampleRecordObject)});
                 const updatedRecord = JSON.stringify(row);
 
@@ -120,7 +121,7 @@ module.exports = function(schemas){
             let result = await ${tableName}Models.patch${capitalizedTableName}s([${JSON.stringify(jsExampleRecordObjectUpdated)}]);
             expect(result).toBeTruthy();
 
-            sqlite.db.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
+            dependencyInjector.dependencies.sqlite.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
                 const oldRecord = JSON.stringify(${JSON.stringify(jsExampleRecordObject)});
                 const updatedRecord = JSON.stringify(row);
 
@@ -134,7 +135,7 @@ module.exports = function(schemas){
             let result = await ${tableName}Models.patchSpecific${capitalizedTableName}(1, ${JSON.stringify(patchExampleRecordObject)});
             expect(result).toBeTruthy();
 
-            sqlite.db.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
+            dependencyInjector.dependencies.sqlite.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
                 const oldRecord = JSON.stringify(${JSON.stringify(patchExampleRecordObject)});
                 const updatedRecord = JSON.stringify(row);
 
@@ -147,7 +148,7 @@ module.exports = function(schemas){
             let result = await ${tableName}Models.delete${capitalizedTableName}s([1, 2]);
             expect(result).toBeTruthy();
 
-            sqlite.db.all('SELECT * FROM ${tableName}', (err, result) => {
+            dependencyInjector.dependencies.sqlite.all('SELECT * FROM ${tableName}', (err, result) => {
                 expect(result.length).toBe(0);
                 done();
             })
@@ -157,7 +158,7 @@ module.exports = function(schemas){
             let result = await ${tableName}Models.deleteSpecific${capitalizedTableName}(1);
             expect(result).toBeTruthy();
 
-            sqlite.db.all('SELECT * FROM ${tableName}', (err, result) => {
+            dependencyInjector.dependencies.sqlite.all('SELECT * FROM ${tableName}', (err, result) => {
                 expect(result.length).toBe(1);
                 done();
             })

@@ -1,7 +1,7 @@
 // ${tableName}
 // ${capitalizedTableName}
 // ${tableSchema}
-// ${insertExampleRecord}
+// ${exampleInsertRecord}
 // ${jsExampleRecordObject} id:1
 // ${jsExampleRecordObjectUpdated}
 // ${jsExampleRecordObjectMinusId}
@@ -13,7 +13,7 @@ module.exports = function(schemas){
         capitalizedTableName, 
         commaSeperatedList, 
         tableSchema, 
-        insertExampleRecord,
+        exampleInsertRecord,
         jsExampleRecordObjectMinusId,
         jsExampleRecordObjectUpdated,
         jsExampleRecordObject
@@ -22,52 +22,23 @@ module.exports = function(schemas){
     delete patchSpecificExampleRecordObjectUpdated.id;
 
     return `
+    const dependencyInjector = require('../dependency-injector.js');
+    dependencyInjector.register('${tableName}Model', {
+        get${capitalizedTableName}s: () => [{id: 1}, {id: 2}],
+        getSpecific${capitalizedTableName}: () => ({id: 1}),
+        post${capitalizedTableName}: () => ({id: 1}),
+        update${capitalizedTableName}s: () => true,
+        updateSpecific${capitalizedTableName}: () => true,
+        patch${capitalizedTableName}s: () => true,
+        patchSpecific${capitalizedTableName}: () => true,
+        delete${capitalizedTableName}s : () => true,
+        deleteSpecific${capitalizedTableName}: () => true
+    });
     const ${tableName}Services = require('./${tableName}');
-    const {initializeSqlite, sqlite} = require('../initialization');
 
-    beforeEach(async () => {
-        initializeSqlite(':memory:');
-        await new Promise((resolve, reject) => {
-            sqlite.db.run('${tableSchema}', (err) => {
-                if(err){
-                    reject(err);
-                }
-                else{
-                    sqlite.db.run('${insertExampleRecord}', (err) => {
-                        if(err){
-                            reject(err);
-                        }
-                        else{
-                            sqlite.db.run('${insertExampleRecord}', (err) => {
-                                if(err){
-                                    reject(err);
-                                }
-                                else{
-                                    resolve(true);
-                                }
-                            })
-                        }
-                    })
-                }
-            })
-        });
-    })
-
-    afterEach(async () => {
-        await new Promise((resolve, reject) => {
-            sqlite.db.run('DROP TABLE ${tableName}', (err) => {
-                if(err){
-                    reject(err);
-                }
-                else{
-                    resolve(true);
-                }
-            });
-        })
-    })
 
     describe('${tableName} service tests', () => {
-        it('get${capitalizedTableName}s should return two records', async (done) => {
+        it('get${capitalizedTableName}s should return status 200 and two records', async (done) => {
             let response = await ${tableName}Services.get${capitalizedTableName}s({limit:10, offset: 0}, '${commaSeperatedList}');
             expect(response.status).toBe(200);
             expect(response.body).toBeTruthy();
@@ -76,7 +47,7 @@ module.exports = function(schemas){
             done();
         });
 
-        it('getSpecific${capitalizedTableName} should return a singular record', async (done) => {
+        it('getSpecific${capitalizedTableName} should return status 200 and a singular record', async (done) => {
             let response = await ${tableName}Services.getSpecific${capitalizedTableName}(1,'${commaSeperatedList}');
             expect(response.status).toBe(200);
             expect(response.body).toBeTruthy();
@@ -85,7 +56,7 @@ module.exports = function(schemas){
             done();
         });
 
-        it('post${capitalizedTableName} should return an object with an id', async (done) => {
+        it('post${capitalizedTableName} should return status 200 and an object with an id', async (done) => {
             let response = await ${tableName}Services.post${capitalizedTableName}(${JSON.stringify(jsExampleRecordObjectMinusId)});
             expect(response.status).toBe(200);
             expect(response.body).toBeTruthy();
@@ -94,90 +65,52 @@ module.exports = function(schemas){
             done();
         });
 
-        it('update${capitalizedTableName}s should update records', async (done) => {
+        it('update${capitalizedTableName}s should return status 200 and a body with a message property', async (done) => {
             let response = await ${tableName}Services.update${capitalizedTableName}s([${JSON.stringify(jsExampleRecordObjectUpdated)}]);
             expect(response.status).toBe(200);
             expect(response.body).toBeTruthy();
             expect(response.body.message).toBeTruthy();
-
-            sqlite.db.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
-                const oldRecord = JSON.stringify(${JSON.stringify(jsExampleRecordObject)});
-                const updatedRecord = JSON.stringify(row);
-
-                expect(oldRecord === updatedRecord).toBe(false);
-                done();
-            })
-
+            done();
         });
 
-        it('updateSpecific${capitalizedTableName} should update a specific record', async (done) => {
+        it('updateSpecific${capitalizedTableName} should return status 200 and a body with a message property', async (done) => {
             let response = await ${tableName}Services.updateSpecific${capitalizedTableName}(${JSON.stringify(jsExampleRecordObjectUpdated)});
             expect(response.status).toBe(200);
             expect(response.body).toBeTruthy();
             expect(response.body.message).toBeTruthy();
-            
-            sqlite.db.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
-                const oldRecord = JSON.stringify(${JSON.stringify(jsExampleRecordObject)});
-                const updatedRecord = JSON.stringify(row);
-
-                expect(oldRecord === updatedRecord).toBe(false);
-                done();
-            })
+            done();
         });
 
-        it('patch${capitalizedTableName}s should update records', async (done) => {
+        it('patch${capitalizedTableName}s should return status 200 and a body with a message property', async (done) => {
             let response = await ${tableName}Services.patch${capitalizedTableName}s([${JSON.stringify(jsExampleRecordObjectUpdated)}]);
             expect(response.status).toBe(200);
             expect(response.body).toBeTruthy();
             expect(response.body.message).toBeTruthy();
-
-            sqlite.db.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
-                const oldRecord = JSON.stringify(${JSON.stringify(jsExampleRecordObject)});
-                const updatedRecord = JSON.stringify(row);
-
-                expect(oldRecord === updatedRecord).toBe(false);
-                done();
-            })
-
+            done();
         });
 
-        it('patchSpecific${capitalizedTableName} should update a specific record', async (done) => {
+        it('patchSpecific${capitalizedTableName} should return status 200 and a body with a message property', async (done) => {
             let response = await ${tableName}Services.patchSpecific${capitalizedTableName}(1, ${JSON.stringify(patchSpecificExampleRecordObjectUpdated)});
             expect(response.status).toBe(200);
             expect(response.body).toBeTruthy();
             expect(response.body.message).toBeTruthy();
-            
-            sqlite.db.get('SELECT * FROM ${tableName} WHERE id=1', (err, row) => {
-                const oldRecord = JSON.stringify(${JSON.stringify(jsExampleRecordObject)});
-                const updatedRecord = JSON.stringify(row);
-
-                expect(oldRecord === updatedRecord).toBe(false);
-                done();
-            })
+            done();
         });
 
-        it('delete${capitalizedTableName}s should delete records', async (done) => {
+        it('delete${capitalizedTableName}s return status 200 and a body with a message property', async (done) => {
             let response = await ${tableName}Services.delete${capitalizedTableName}s([1, 2]);
             expect(response.status).toBe(200);
             expect(response.body).toBeTruthy();
             expect(response.body.message).toBeTruthy();
-
-            sqlite.db.all('SELECT * FROM ${tableName}', (err, result) => {
-                expect(result.length).toBe(0);
-                done();
-            })
+            done();
         });
 
-        it('deleteSpecific${capitalizedTableName} should delete a specific record', async (done) => {
+        it('deleteSpecific${capitalizedTableName} return status 200 and a body with a message property', async (done) => {
             let response = await ${tableName}Services.deleteSpecific${capitalizedTableName}(1);
             expect(response.status).toBe(200);
             expect(response.body).toBeTruthy();
             expect(response.body.message).toBeTruthy();
-
-            sqlite.db.all('SELECT * FROM ${tableName}', (err, result) => {
-                expect(result.length).toBe(1);
-                done();
-            })
+            done();
         })
     })
     `

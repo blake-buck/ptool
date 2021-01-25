@@ -7,11 +7,12 @@ module.exports = function(schemas){
         keyPairValues,
         updateValues } = schemas;
     return `
-    let {sqlite} = require('../initialization');
+    const dependencyInjector = require('../dependency-injector.js');
+    const sqlite = dependencyInjector.inject('sqlite');
 
     function get${capitalizedTableName}s({limit, offset}, fieldData){
         return new Promise((resolve, reject) => {
-            sqlite.db.all(
+            sqlite.all(
                 \`SELECT \${fieldData} FROM ${tableName} LIMIT $limit OFFSET $offset\`, 
                 {
                     $limit: limit, 
@@ -29,7 +30,7 @@ module.exports = function(schemas){
 
     function getSpecific${capitalizedTableName}(${tableName}Id, fieldData){
         return new Promise((resolve, reject) => {
-            sqlite.db.get(
+            sqlite.get(
                 \`SELECT \${fieldData} FROM ${tableName} WHERE id=$id\`,
                 {
                     $id: ${tableName}Id
@@ -46,7 +47,7 @@ module.exports = function(schemas){
 
     function post${capitalizedTableName}({${insertValues.join(',')}}){
         return new Promise((resolve, reject) => {
-            sqlite.db.get(
+            sqlite.get(
                 \`INSERT INTO ${tableName}(${insertValues.join(', ')}) VALUES(${$prependedInsertValues.join(', ')});\`,
                 {
                     ${keyPairValues}
@@ -55,7 +56,7 @@ module.exports = function(schemas){
                     if(err){
                         return reject(err);
                     }
-                    sqlite.db.get(
+                    sqlite.get(
                         \`SELECT MAX(id) FROM ${tableName}\`,
                         (err, idData) => {
                             if(err){
@@ -75,7 +76,7 @@ module.exports = function(schemas){
     function update${capitalizedTableName}s(${tableName}DataArray){
         return Promise.all(${tableName}DataArray.map(({id, ${insertValues.join(', ')}}) => {
             return new Promise((resolve, reject) => {
-                sqlite.db.run(
+                sqlite.run(
                     \`UPDATE ${tableName} SET ${updateValues} WHERE id=$id\`,
                     {
                         $id: id,
@@ -94,7 +95,7 @@ module.exports = function(schemas){
 
     function updateSpecific${capitalizedTableName}({id, ${insertValues.join(', ')}}){
         return new Promise((resolve, reject) => {
-            sqlite.db.run(
+            sqlite.run(
                 \`UPDATE ${tableName} SET ${updateValues} WHERE id=$id\`,
                 {
                     $id:id,
@@ -125,7 +126,7 @@ module.exports = function(schemas){
             queryContents += ' WHERE id=$id';
     
             return new Promise((resolve, reject) => {
-                sqlite.db.run(
+                sqlite.run(
                     \`UPDATE ${tableName} \${queryContents}\`,
                     queryData,
                     (err) => {
@@ -152,7 +153,7 @@ module.exports = function(schemas){
         queryContents += ' WHERE id=$id';
     
         return new Promise((resolve, reject) => {
-            sqlite.db.run(
+            sqlite.run(
                 \`UPDATE ${tableName} \${queryContents}\`,
                 queryData,
                 (err) => {
@@ -168,7 +169,7 @@ module.exports = function(schemas){
     function delete${capitalizedTableName}s(${tableName}IdList){
         return Promise.all(${tableName}IdList.map(id=> {
             return new Promise((resolve, reject) => {
-                sqlite.db.run(
+                sqlite.run(
                     \`DELETE FROM ${tableName} WHERE id=$id\`,
                     {
                         $id:id
@@ -186,7 +187,7 @@ module.exports = function(schemas){
 
     function deleteSpecific${capitalizedTableName}(${tableName}Id){
         return new Promise((resolve, reject) => {
-            sqlite.db.run(
+            sqlite.run(
                 \`DELETE FROM ${tableName} WHERE id=$id\`,
                 {
                     $id:${tableName}Id
