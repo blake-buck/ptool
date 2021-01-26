@@ -1,5 +1,6 @@
 const fs = require('fs').promises;
 const existsSync = require('fs').existsSync;
+const modifyInitializationFile = require('./utils/modify-initialization-file');
 /*
 # Structure of a module
 ```
@@ -35,13 +36,30 @@ post-install-instructions.txt
         'routes',
         'services'
     ];
+
+    const dependencyInjectionDirectories = {
+        'models':'model',
+        'services':'service',
+        'controllers':'controller'
+    }
     
     moduleDirectories.forEach(async (directoryName) => {
         const directoryPath = `${modulePath}/${directoryName}`;
         const directoryExists = existsSync(directoryPath);
 
+    
+
         if(directoryExists){
             const files = await fs.readdir(directoryPath, 'utf8');
+            
+            if(dependencyInjectionDirectories[directoryName]){
+                const nonTestFiles = files.filter(name => !name.includes('.test.'));
+                for(let i =0; i< nonTestFiles.length; i++){
+                    const nonTestFileName = nonTestFiles[i];
+                    await modifyInitializationFile(installationPath, dependencyInjectionDirectories[directoryName], nonTestFileName.replace('.js', ''))
+                }
+            }
+
             for(let i=0; i<files.length; i++){
                 const fileName = files[i];
                 const filePath = `${directoryName}/${fileName}`;
@@ -197,6 +215,8 @@ async function printPostInstallInstructions(installationPath, modulePath){
     console.log(await fs.readFile(`${modulePath}/post-install-instructions.txt`, 'utf8'));
 }
 
+
+
 async function run(installationPath, modulePath){
     await writeDirectoryFilesToBaseInstall(installationPath, modulePath);
     await addBarrelFileEntries(installationPath, modulePath);
@@ -204,6 +224,7 @@ async function run(installationPath, modulePath){
     await addDependenciesToPacakgeJson(installationPath, modulePath);
     await writeConfigurationVariables(installationPath, modulePath);
     await addInitializationContent(installationPath, modulePath);
+
     await writeRemainingFilesToRoot(installationPath, modulePath);
     await printPostInstallInstructions(installationPath, modulePath);
 }

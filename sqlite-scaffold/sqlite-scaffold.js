@@ -31,7 +31,7 @@ const fs = require('fs').promises;
 
 const pipe = require('../utils/pipe');
 const prompt = require('../utils/prompt');
-
+const modifyInitializationFile = require('../utils/modify-initialization-file');
 
 
 const sqliteToJoi = {
@@ -136,15 +136,6 @@ async function getTableName(){
         return process.exit();
     }
     return process.argv[2];
-}
-
-async function modifyInitializationFile(installationPath, layerType, tableName){
-    // layer type = what layer of the application it is: model, service, controller, etc
-    const capitalizedLayerType = `${layerType[0].toUpperCase()}${layerType.slice(1)}`;
-    const pluralLayerType = `${layerType}s`;
-    let initializationFileContents = await fs.readFile(`${installationPath}/${pluralLayerType}/initialize${capitalizedLayerType}s.js`, 'utf8');
-    initializationFileContents = initializationFileContents.replace('}', `\tdependencyInjector.register('${tableName}${capitalizedLayerType}', require('./${tableName}'));\n}`);
-    await fs.writeFile(`${installationPath}/${pluralLayerType}/initialize${capitalizedLayerType}s.js`, initializationFileContents)
 }
 
 async function writeModelFile(installationPath, schemas){
