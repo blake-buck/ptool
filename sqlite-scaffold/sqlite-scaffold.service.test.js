@@ -5,13 +5,13 @@
 // ${jsExampleRecordObject} id:1
 // ${jsExampleRecordObjectUpdated}
 // ${jsExampleRecordObjectMinusId}
-// ${commaSeperatedList}
+// ${commaSeparatedList}
 
 module.exports = function(schemas){
     const {
         tableName, 
         capitalizedTableName, 
-        commaSeperatedList, 
+        commaSeparatedList, 
         tableSchema, 
         exampleInsertRecord,
         jsExampleRecordObjectMinusId,
@@ -39,7 +39,7 @@ module.exports = function(schemas){
 
     describe('${tableName} service tests', () => {
         it('get${capitalizedTableName}s should return status 200 and two records', async (done) => {
-            let response = await ${tableName}Services.get${capitalizedTableName}s({limit:10, offset: 0}, '${commaSeperatedList}');
+            let response = await ${tableName}Services.get${capitalizedTableName}s({value: {limit:10, offset: 0, fields:'${commaSeparatedList}'}});
             expect(response.status).toBe(200);
             expect(response.body).toBeTruthy();
             expect(response.body.length).toBe(2);
@@ -48,7 +48,7 @@ module.exports = function(schemas){
         });
 
         it('getSpecific${capitalizedTableName} should return status 200 and a singular record', async (done) => {
-            let response = await ${tableName}Services.getSpecific${capitalizedTableName}(1,'${commaSeperatedList}');
+            let response = await ${tableName}Services.getSpecific${capitalizedTableName}(1,'${commaSeparatedList}');
             expect(response.status).toBe(200);
             expect(response.body).toBeTruthy();
             expect(response.body.id).toBe(1);

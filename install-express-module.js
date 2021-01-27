@@ -231,7 +231,7 @@ async function run(installationPath, modulePath){
 
 run(
     'C:/Users/Blake/projects/ptool-express-boilerplate',
-    'C:/Users/Blake/projects/ptool-modules/firebase_auth'
+    'C:/Users/Blake/projects/ptool-modules/permissioning'
 );
 
 process.on('unhandledRejection', (err) => {

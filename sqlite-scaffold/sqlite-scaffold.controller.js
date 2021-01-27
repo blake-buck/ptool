@@ -16,25 +16,43 @@ module.exports = function(schemas){
     const dependencyInjector = require('../dependency-injector.js');
     const ${tableName}Service = dependencyInjector.inject('${tableName}Service');
 
+    const validQueryKeys = '${commaSeparatedList}'.split(',');
+
     const specificParametersSchema = Joi.object({
         id: Joi.number().integer().required()
     })
 
-    const get${capitalizedTableName}sSchema = Joi.object({
-        limit: Joi.number().default(10),
-        offset: Joi.number().default(0),
-        fields: Joi.string().pattern(/^[\\w+,*]+$/i).default('${commaSeparatedList}')
-    });
+    const get${capitalizedTableName}sSchema = Joi
+        .object({
+            limit: Joi.number().default(10),
+            offset: Joi.number().default(0),
+            fields: Joi.string().pattern(/^[\\w+,*]+$/i).default('${commaSeparatedList}')
+        })
+        .pattern(
+            Joi.alternatives().try(...validQueryKeys), 
+            Joi.alternatives().try(
+                Joi.string(), 
+                Joi.number(), 
+                Joi.boolean(),
+                Joi.object({
+                    lt: Joi.alternatives().try(Joi.string(), Joi.number()),
+                    gt: Joi.alternatives().try(Joi.string(), Joi.number()),
+                    lte: Joi.alternatives().try(Joi.string(), Joi.number()),
+                    gte: Joi.alternatives().try(Joi.string(), Joi.number()),
+                    ne: Joi.alternatives().try(Joi.string(), Joi.number()),
+                    like: Joi.string(),
+                    in: Joi.alternatives().try(Joi.string().pattern(/^(\d|\d,)+$/), Joi.string().pattern(/^[\\w+,*]+$/i), Joi.object({like: Joi.string()})),
+                })
+            )
+        );
+
     async function get${capitalizedTableName}s(request, response){
         const validationResult = get${capitalizedTableName}sSchema.validate(request.query);
         if(validationResult.error){
             throw new Error(validationResult.error);
         }
 
-        const paginationData = {limit, offset} = validationResult.value;
-        const fieldData = validationResult.value.fields;
-
-        const result = await ${tableName}Service.get${capitalizedTableName}s(paginationData, fieldData);
+        const result = await ${tableName}Service.get${capitalizedTableName}s(validationResult);
         return response.status(result.status).json(result.body);
     }
 

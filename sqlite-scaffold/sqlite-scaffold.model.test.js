@@ -5,7 +5,7 @@
 // ${jsExampleRecordObject} id:1
 // ${jsExampleRecordObjectUpdated}
 // ${jsExampleRecordObjectMinusId}
-// ${commaSeperatedList}
+// ${commaSeparatedList}
 
 module.exports = function(schemas){
     const {
