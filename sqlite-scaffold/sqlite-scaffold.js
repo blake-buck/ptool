@@ -67,6 +67,8 @@ async function run(){
 
     await checkIfSingularTable();
 
+    const permissionSchema = await checkIfPermissions(tableName);
+
     const parentSchema = await buildParentSchemas(tableName);
     const {
         tableSchema,
@@ -80,7 +82,7 @@ async function run(){
     console.log('Table Schema');
     console.log(tableSchema);
 
-    await fs.writeFile(`${currentWorkingDirectory}/dbs/create-${tableName}-table.sql`, tableSchema);
+    await fs.writeFile(`${currentWorkingDirectory}/dbs/create-${tableName}-table.sql`, `${tableSchema}${permissionSchema}`);
 
 
     let schemas = createSchemasFromTableName(
@@ -342,4 +344,48 @@ async function modifyRouteBarrelFile(installationPath, tableName){
         );
 
     await fs.writeFile(`${installationPath}/routes/routes.js`, routeBarrelFileContents);
+}
+
+async function checkIfPermissions(tableName){
+    
+    let sqlQuery='';
+    const isTableNameSingular = await prompt('Would you like to automatically generate permissions for this table? Y/N ');
+    if(isTableNameSingular.toLowerCase() === 'y'){
+        const screamingSnakeCaseTableName = convertToScreamingSnakeCase(tableName)
+        sqlQuery=`
+        INSERT INTO permissions(name, description) VALUES ('${screamingSnakeCaseTableName}_GET', 'Get permission for ${tableName} table');
+        INSERT INTO permissions(name, description) VALUES ('${screamingSnakeCaseTableName}_POST', 'Post permission for ${tableName} table');
+        INSERT INTO permissions(name, description) VALUES ('${screamingSnakeCaseTableName}_MODIFY', 'Modify permission for ${tableName} table');
+        INSERT INTO permissions(name, description) VALUES ('${screamingSnakeCaseTableName}_DELETE', 'Delete permission for ${tableName} table');
+        `
+    }
+    return sqlQuery;
+}
+
+// assumes that only ASCII characters are used, no dashes/numbers included in string
+function convertToScreamingSnakeCase(str){
+    let uppercaseLetters = str.match(/[A-Z]/g)
+    if(!uppercaseLetters){
+        return str.toUpperCase();
+    }
+    
+    const lastPositionIndex = {};
+    let positionsOfUppercaseLetters = uppercaseLetters.map((letter) => {
+        lastPositionIndex[letter] = str.indexOf(letter, lastPositionIndex[letter] ? lastPositionIndex[letter] + 1 : 0);
+        return lastPositionIndex[letter]
+    });
+
+
+    let screamingSnakeCase = '';
+    let lastPosition = 0;
+    for(let i=0; i< positionsOfUppercaseLetters.length; i++){
+        const uppercaseLetterPos = positionsOfUppercaseLetters[i];
+        screamingSnakeCase += str.slice(lastPosition, uppercaseLetterPos).toUpperCase()
+        screamingSnakeCase += '_';
+        lastPosition = uppercaseLetterPos;
+    }
+
+    screamingSnakeCase += str.slice(lastPosition).toUpperCase();
+
+    return screamingSnakeCase;
 }
