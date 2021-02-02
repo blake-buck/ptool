@@ -231,7 +231,7 @@ async function run(installationPath, modulePath){
 
 run(
     'C:/Users/Blake/projects/ptool-express-boilerplate',
-    'C:/Users/Blake/projects/ptool-modules/permissioning'
+    'C:/Users/Blake/projects/ptool-modules/sqlite-logging'
 );
 
 process.on('unhandledRejection', (err) => {
