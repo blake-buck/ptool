@@ -122,6 +122,15 @@ post-install-instructions.txt
         ...moduleSpecification.components.schemas
     }
     
+    if(moduleSpecification.components.securitySchemes){
+        baseInstallSpecification.components.securitySchemes = {
+            ...baseInstallSpecification.components.securitySchemes,
+            ...moduleSpecification.components.securitySchemes
+        }
+    }
+    
+
+    
     await fs.writeFile(`${installationPath}/open-api-specification.json`, JSON.stringify(baseInstallSpecification));
 }
 
@@ -231,7 +240,7 @@ async function run(installationPath, modulePath){
 
 run(
     'C:/Users/Blake/projects/ptool-express-boilerplate',
-    'C:/Users/Blake/projects/ptool-modules/sqlite-logging'
+    'C:/Users/Blake/projects/ptool-modules/cognito'
 );
 
 process.on('unhandledRejection', (err) => {
