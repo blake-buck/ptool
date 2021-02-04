@@ -23,7 +23,7 @@ module.exports = function(schemas){
 
     return `
     const dependencyInjector = require('../dependency-injector.js');
-    dependencyInjector.register('${tableName}Model', {
+    dependencyInjector.register('${tableName}Model', () => ({
         get${capitalizedTableName}s: () => [{id: 1}, {id: 2}],
         getSpecific${capitalizedTableName}: () => ({id: 1}),
         post${capitalizedTableName}: () => ({id: 1}),
@@ -33,7 +33,7 @@ module.exports = function(schemas){
         patchSpecific${capitalizedTableName}: () => true,
         delete${capitalizedTableName}s : () => true,
         deleteSpecific${capitalizedTableName}: () => true
-    });
+    }));
     const ${tableName}Services = require('./${tableName}');
 
 

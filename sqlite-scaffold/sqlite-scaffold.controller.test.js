@@ -235,7 +235,7 @@ module.exports = function(schemas){
         const dependencyInjector = require('../dependency-injector.js');
         dependencyInjector.register(
             '${tableName}Service', 
-            {
+            () => ({
                 get${capitalizedTableName}s: () => true,
                 getSpecific${capitalizedTableName}: () => true,
                 post${capitalizedTableName}: () => true,
@@ -245,7 +245,7 @@ module.exports = function(schemas){
                 patchSpecific${capitalizedTableName}: () => true,
                 delete${capitalizedTableName}s: () => true,
                 deleteSpecific${capitalizedTableName}: () => true
-            }
+            })
         );
         const ${tableName}Controllers = require('./${tableName}');
 

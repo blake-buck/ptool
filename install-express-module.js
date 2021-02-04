@@ -94,7 +94,7 @@ post-install-instructions.txt
     const routeFiles = await fs.readdir(`${modulePath}/routes`);
     const nonTestRouteFiles = routeFiles.filter(fileName => !fileName.includes('.test.'));
 
-    let routeBarrelFileContents = await fs.readFile(`${installationPath}/routes/routes.js`, 'utf8');
+    let routeBarrelFileContents = await fs.readFile(`${installationPath}/routes/initializeRoutes.js`, 'utf8');
     nonTestRouteFiles.forEach((fileName) => {
         routeBarrelFileContents = `\nconst ${fileName.replace('.js','')}Router = require("./${fileName}");\n` + routeBarrelFileContents;
         routeBarrelFileContents = routeBarrelFileContents.replace(
@@ -103,7 +103,7 @@ post-install-instructions.txt
         );
     });
 
-    await fs.writeFile(`${installationPath}/routes/routes.js`, routeBarrelFileContents);
+    await fs.writeFile(`${installationPath}/routes/initializeRoutes.js`, routeBarrelFileContents);
 }
 
  async function addOpenApiSpecificationContent(installationPath, modulePath){
@@ -240,7 +240,7 @@ async function run(installationPath, modulePath){
 
 run(
     'C:/Users/Blake/projects/ptool-express-boilerplate',
-    'C:/Users/Blake/projects/ptool-modules/cognito'
+    'C:/Users/Blake/projects/ptool-modules/sqlite'
 );
 
 process.on('unhandledRejection', (err) => {

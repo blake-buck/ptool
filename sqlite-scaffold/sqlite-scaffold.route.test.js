@@ -14,9 +14,9 @@ module.exports = function(schemas){
     const {initializeSqlite, initializeStandardMiddleware} = require('../initialization');
 
     initializeSqlite(':memory:');
-    dependencyInjector.register('${tableName}Model', require('../models/${tableName}'));
-    dependencyInjector.register('${tableName}Service', require('../services/${tableName}'));
-    dependencyInjector.register('${tableName}Controller', require('../controllers/${tableName}'));
+    dependencyInjector.register('${tableName}Model', () => require('../models/${tableName}'));
+    dependencyInjector.register('${tableName}Service', () => require('../services/${tableName}'));
+    dependencyInjector.register('${tableName}Controller', () => require('../controllers/${tableName}'));
 
     const ${tableName}Router = require('./${tableName}');
 
