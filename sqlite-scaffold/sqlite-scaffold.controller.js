@@ -16,6 +16,8 @@ module.exports = function(schemas){
     const dependencyInjector = require('../dependency-injector.js');
     const ${tableName}Service = dependencyInjector.inject('${tableName}Service');
 
+    const {BadRequestError} = require('../constants/errors');
+
     const validQueryKeys = '${commaSeparatedList}'.split(',');
 
     const specificParametersSchema = Joi.object({
@@ -49,7 +51,7 @@ module.exports = function(schemas){
     async function get${capitalizedTableName}s(request, response){
         const validationResult = get${capitalizedTableName}sSchema.validate(request.query);
         if(validationResult.error){
-            throw new Error(validationResult.error);
+            throw new BadRequestError(validationResult.error);
         }
 
         const result = await ${tableName}Service.get${capitalizedTableName}s(validationResult);
@@ -62,11 +64,11 @@ module.exports = function(schemas){
     async function getSpecific${capitalizedTableName}(request, response){
         const headerValidation = specificParametersSchema.validate(request.params);
         if(headerValidation.error){
-            throw new Error(headerValidation.error);
+            throw new BadRequestError(headerValidation.error);
         }
         const validationResult = getSpecific${capitalizedTableName}Schema.validate(request.query);
         if(validationResult.error){
-            throw new Error(validationResult.error);
+            throw new BadRequestError(validationResult.error);
         }
 
         const fieldData = validationResult.value.fields;
@@ -79,7 +81,7 @@ module.exports = function(schemas){
     async function post${capitalizedTableName}(request, response){
         const validationResult = post${capitalizedTableName}Schema.validate(request.body);
         if(validationResult.error){
-            throw new Error(validationResult.error);
+            throw new BadRequestError(validationResult.error);
         }
 
         const result = await ${tableName}Service.post${capitalizedTableName}(request.body);
@@ -90,7 +92,7 @@ module.exports = function(schemas){
     async function update${capitalizedTableName}s(request, response){
         const validationResult = update${capitalizedTableName}sSchema.validate(request.body);
         if(validationResult.error){
-            throw new Error(validationResult.error);
+            throw new BadRequestError(validationResult.error);
         }
 
         const result = await ${tableName}Service.update${capitalizedTableName}s(request.body);
@@ -101,12 +103,12 @@ module.exports = function(schemas){
     async function updateSpecific${capitalizedTableName}(request, response){
         const headerValidation = specificParametersSchema.validate(request.params);
         if(headerValidation.error){
-            throw new Error(headerValidation.error);
+            throw new BadRequestError(headerValidation.error);
         }
 
         const validationResult = updateSpecific${capitalizedTableName}Schema.validate(request.body);
         if(validationResult.error){
-            throw new Error(validationResult.error);
+            throw new BadRequestError(validationResult.error);
         }
 
         const result = await ${tableName}Service.updateSpecific${capitalizedTableName}(request.body);
@@ -117,7 +119,7 @@ module.exports = function(schemas){
     async function patch${capitalizedTableName}s(request, response){
         const validationResult = patch${capitalizedTableName}sSchema.validate(request.body);
         if(validationResult.error){
-            throw new Error(validationResult.error);
+            throw new BadRequestError(validationResult.error);
         }
 
         const result = await ${tableName}Service.patch${capitalizedTableName}s(request.body);
@@ -128,12 +130,12 @@ module.exports = function(schemas){
     async function patchSpecific${capitalizedTableName}(request, response){
         const headerValidation = specificParametersSchema.validate(request.params);
         if(headerValidation.error){
-            throw new Error(headerValidation.error);
+            throw new BadRequestError(headerValidation.error);
         }
 
         const validationResult = patchSpecific${capitalizedTableName}Schema.validate(request.body);
         if(validationResult.error){
-            throw new Error(validationResult.error);
+            throw new BadRequestError(validationResult.error);
         }
 
         const result = await ${tableName}Service.patchSpecific${capitalizedTableName}(request.params.id, request.body);
@@ -144,7 +146,7 @@ module.exports = function(schemas){
     async function delete${capitalizedTableName}s(request, response){
         const validationResult = delete${capitalizedTableName}sSchema.validate(request.body);
         if(validationResult.error){
-            throw new Error(validationResult.error);
+            throw new BadRequestError(validationResult.error);
         }
 
         const result = await ${tableName}Service.delete${capitalizedTableName}s(request.body);
@@ -154,7 +156,7 @@ module.exports = function(schemas){
     async function deleteSpecific${capitalizedTableName}(request, response){
         const headerValidation = specificParametersSchema.validate(request.params);
         if(headerValidation.error){
-            throw new Error(headerValidation.error);
+            throw new BadRequestError(headerValidation.error);
         }
 
         const result = await ${tableName}Service.deleteSpecific${capitalizedTableName}(headerValidation.value.id);
