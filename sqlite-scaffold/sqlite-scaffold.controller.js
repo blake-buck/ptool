@@ -28,7 +28,7 @@ module.exports = function(schemas){
         .object({
             limit: Joi.number().default(10),
             offset: Joi.number().default(0),
-            fields: Joi.string().pattern(/^[\\w+,*]+$/i).default('${commaSeparatedList}')
+            fields: Joi.string().pattern(/^[\\w+,*]+[\\w]$/i).default('${commaSeparatedList}')
         })
         .pattern(
             Joi.alternatives().try(...validQueryKeys), 
@@ -43,7 +43,7 @@ module.exports = function(schemas){
                     gte: Joi.alternatives().try(Joi.string(), Joi.number()),
                     ne: Joi.alternatives().try(Joi.string(), Joi.number()),
                     like: Joi.string(),
-                    in: Joi.alternatives().try(Joi.string().pattern(/^(\d|\d,)+$/), Joi.string().pattern(/^[\\w+,*]+$/i), Joi.object({like: Joi.string()})),
+                    in: Joi.alternatives().try(Joi.string().pattern(/^(\d|\d,)+$/), Joi.string().pattern(/^[\\w+,*]+[\\w]$/i), Joi.object({like: Joi.string()})),
                 })
             )
         );
@@ -59,7 +59,7 @@ module.exports = function(schemas){
     }
 
     const getSpecific${capitalizedTableName}Schema = Joi.object({
-        fields: Joi.string().pattern(/^[\\w+,*]+$/i).default('${commaSeparatedList}')
+        fields: Joi.string().pattern(/^[\\w+,*]+[\\w]$/i).default('${commaSeparatedList}')
     })
     async function getSpecific${capitalizedTableName}(request, response){
         const headerValidation = specificParametersSchema.validate(request.params);
