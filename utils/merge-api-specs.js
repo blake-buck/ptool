@@ -15,5 +15,13 @@ module.exports = async function(installationPath, modulePath, contents){
         ...moduleSpecification.components.schemas
     }
 
+    if(moduleSpecification.components.securitySchemes){
+        baseInstallSpecification.components.securitySchemes = {
+            ...baseInstallSpecification.components.securitySchemes,
+            ...moduleSpecification.components.securitySchemes
+        }
+    }
+    
+
     return baseInstallSpecification;
 }

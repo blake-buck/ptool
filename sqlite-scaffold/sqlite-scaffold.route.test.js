@@ -66,7 +66,7 @@ module.exports = function(schemas){
         app.use(${tableName}Router);
 
 
-        it('GET - /${tableName}', async (done) => {
+        it('GET - /api/v1/${tableName}', async (done) => {
             request(app)
                 .get('/${tableName}')
                 .set('Accept', 'application/json')
@@ -84,7 +84,7 @@ module.exports = function(schemas){
                 });
         });
 
-        it('POST - /${tableName}', async (done) => {
+        it('POST - /api/v1/${tableName}', async (done) => {
             request(app)
                 .post('/${tableName}')
                 .set('Accept', 'application/json')
@@ -104,7 +104,7 @@ module.exports = function(schemas){
                 });
         });
 
-        it('PUT - /${tableName}', async (done) => {
+        it('PUT - /api/v1/${tableName}', async (done) => {
             request(app)
                 .put('/${tableName}')
                 .set('Accept', 'application/json')
@@ -124,7 +124,7 @@ module.exports = function(schemas){
                 });
         });
 
-        it('PATCH - /${tableName}', async (done) => {
+        it('PATCH - /api/v1/${tableName}', async (done) => {
             request(app)
                 .patch('/${tableName}')
                 .set('Accept', 'application/json')
@@ -144,7 +144,7 @@ module.exports = function(schemas){
                 });
         });
 
-        it('DELETE - /${tableName}', async (done) => {
+        it('DELETE - /api/v1/${tableName}', async (done) => {
             request(app)
                 .delete('/${tableName}')
                 .set('Accept', 'application/json')
@@ -166,7 +166,7 @@ module.exports = function(schemas){
     
 
     
-        it('GET - /${tableName}/:id', async (done) => {
+        it('GET - /api/v1/${tableName}/:id', async (done) => {
             request(app)
                 .get('/${tableName}/1')
                 .set('Accept', 'application/json')
@@ -186,7 +186,7 @@ module.exports = function(schemas){
                 });
         });
 
-        it('PUT - /${tableName}/:id', async (done) => {
+        it('PUT - /api/v1/${tableName}/:id', async (done) => {
             request(app)
                 .put('/${tableName}/1')
                 .set('Accept', 'application/json')
@@ -206,7 +206,7 @@ module.exports = function(schemas){
                 });
         });
 
-        it('PATCH - /${tableName}/:id', async (done) => {
+        it('PATCH - /api/v1/${tableName}/:id', async (done) => {
             request(app)
                 .patch('/${tableName}/1')
                 .set('Accept', 'application/json')
@@ -226,7 +226,7 @@ module.exports = function(schemas){
                 });
         });
 
-        it('DELETE - /${tableName}/:id', async (done) => {
+        it('DELETE - /api/v1/${tableName}/:id', async (done) => {
             request(app)
                 .delete('/${tableName}/1')
                 .set('Accept', 'application/json')

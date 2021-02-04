@@ -340,7 +340,7 @@ async function modifyRouteBarrelFile(installationPath, tableName){
     routeBarrelFileContents = `\nconst ${tableName}Router = require("./${tableName}.js");\n` + routeBarrelFileContents;
         routeBarrelFileContents = routeBarrelFileContents.replace(
             'function initializeRoutes(app){',
-            `function initializeRoutes(app){\n\tapp.use(${tableName}Router);\n`
+            `function initializeRoutes(app){\n\tapp.use(routePrefix, ${tableName}Router);\n`
         );
 
     await fs.writeFile(`${installationPath}/routes/routes.js`, routeBarrelFileContents);

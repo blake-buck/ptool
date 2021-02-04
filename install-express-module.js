@@ -99,7 +99,7 @@ post-install-instructions.txt
         routeBarrelFileContents = `\nconst ${fileName.replace('.js','')}Router = require("./${fileName}");\n` + routeBarrelFileContents;
         routeBarrelFileContents = routeBarrelFileContents.replace(
             'function initializeRoutes(app){',
-            `function initializeRoutes(app){\n\tapp.use(${fileName.replace('.js','')}Router);\n`
+            `function initializeRoutes(app){\n\tapp.use(routePrefix, ${fileName.replace('.js','')}Router);\n`
         );
     });
 

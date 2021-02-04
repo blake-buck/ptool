@@ -1,6 +1,6 @@
 {
     "paths":{
-        "/${tableName}":{
+        "/api/v1/${tableName}":{
             "get":{
                 "tags":["${tableName} operations"],
                 "summary": "Retrieves records from the ${tableName} table",
@@ -157,7 +157,7 @@
                 }
             }
         },
-        "/${tableName}/{id}":{
+        "/api/v1/${tableName}/{id}":{
             "get":{
                 "tags":["${tableName} operations"],
                 "summary": "Gets a specific record from the ${tableName} table",
