@@ -238,10 +238,17 @@ async function run(installationPath, modulePath){
     await printPostInstallInstructions(installationPath, modulePath);
 }
 
-run(
-    'C:/Users/Blake/projects/ptool-express-boilerplate',
-    'C:/Users/Blake/projects/ptool-modules/sqlite'
-);
+
+
+if(process.argv.length < 3){
+    console.log('You must include a module name when using this script e.g. sqlite, cognito');
+}
+else{
+    run(
+        process.cwd(),
+        'C:/Users/Blake/projects/ptool-modules/' + process.argv[2]
+    );
+}
 
 process.on('unhandledRejection', (err) => {
     console.error(err);
